@@ -1,0 +1,29 @@
+name:                comp-hw
+version:             0.1.0.0
+-- synopsis:
+-- description:
+author:              Charlie Bloomfield <charlielbloomfield@gmail.com>
+maintainer:          (none)
+-- copyright:
+category:            Text
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.8
+
+executable parser
+  main-is:             Main.hs
+  -- other-modules:
+  build-depends:       base >= 3 && < 5
+                     , comp-hw
+  build-tools:         happy
+                     , alex
+  ghc-options: -Wall
+
+library
+  build-depends:       base >= 3 && < 5
+                     , array
+  hs-source-dirs:      src
+  exposed-modules:     Language
+                       Lexer
+                       Parser
+  ghc-options: -Wall
