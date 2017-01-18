@@ -1,39 +1,44 @@
 {
 module Lexer
   ( Token(..)
+  , TokenClass(..)
   , lexer
   ) where
 }
 
-%wrapper "basic"
+%wrapper "posn"
 
 $digit = 0-9 -- digits
 $alpha = [a-zA-Z] -- alphabetic characters
 
+
+-- All token actions have type ( AlexPosn -> String -> Token )
 tokens :-
   $white+                         ;
   "--".*                          ;
 
-  let                             { \s -> TokenLet }
-  in                              { \s -> TokenIn }
-  \=                              { \s -> TokenEq }
-  \+                              { \s -> TokenPlus }
-  \-                              { \s -> TokenMinus }
-  \*                              { \s -> TokenTimes }
-  \/                              { \s -> TokenDiv }
-  \(                              { \s -> TokenLParen }
-  \)                              { \s -> TokenRParen }
+  let                             { \p _ -> Token p TokenLet }
+  in                              { \p _ -> Token p TokenIn }
+  \=                              { \p _ -> Token p TokenEq }
+  \+                              { \p _ -> Token p TokenPlus }
+  \-                              { \p _ -> Token p TokenMinus }
+  \*                              { \p _ -> Token p TokenTimes }
+  \/                              { \p _ -> Token p TokenDiv }
+  \(                              { \p _ -> Token p TokenLParen }
+  \)                              { \p _ -> Token p TokenRParen }
 
-  $digit+                         { \s -> TokenInt (read s) }
-  $alpha [$alpha $digit \_ \’]*   { \s -> TokenVar s }
+  $digit+                         { \p s -> Token p $ TokenInt (read s) }
+  $alpha [$alpha $digit \_ \’]*   { \p s -> Token p $ TokenVar s }
 
 
 {
--- Each action has type :: String -> Token
 
+-- Token includes source code position and a token class
+data Token = Token AlexPosn TokenClass
+  deriving (Eq,Show)
 
--- The token type:
-data Token
+-- Each action has type :: String -> TokenClass -> Token
+data TokenClass
   = TokenLet
   | TokenIn
   | TokenVar String
@@ -46,7 +51,6 @@ data Token
   | TokenLParen
   | TokenRParen
   deriving (Eq,Show)
-
 
 -- Lexer wrapper function
 lexer :: String -> [Token]

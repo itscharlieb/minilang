@@ -12,17 +12,17 @@ import Lexer
 %error { parseError }
 
 %token
-      let             { TokenLet }
-      in              { TokenIn }
-      int             { TokenInt $$ }
-      var             { TokenVar $$ }
-      '='             { TokenEq }
-      '+'             { TokenPlus }
-      '-'             { TokenMinus }
-      '*'             { TokenTimes }
-      '/'             { TokenDiv }
-      '('             { TokenLParen }
-      ')'             { TokenRParen }
+      let             { Token _ TokenLet }
+      in              { Token _ TokenIn }
+      int             { Token _ (TokenInt $$) }
+      var             { Token _ (TokenVar $$) }
+      '='             { Token _ TokenEq }
+      '+'             { Token _ TokenPlus }
+      '-'             { Token _ TokenMinus }
+      '*'             { Token _ TokenTimes }
+      '/'             { Token _ TokenDiv }
+      '('             { Token _ TokenLParen }
+      ')'             { Token _ TokenRParen }
 
 %%
 
