@@ -5,5 +5,6 @@
 # You *MUST* replace the following commands with the
 # commands for building your compiler.
 
-make clean -C ./src
-make -C ./src
+# make clean -C ./src
+# make -C ./src
+stack build
