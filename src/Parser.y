@@ -18,6 +18,7 @@ import Lexer
 %token
       int             { Token _ (TokenIntVal $$) }
       float           { Token _ (TokenFloatVal $$) }
+      string          { Token _ (TokenStringVal $$) }
       id              { Token _ (TokenId $$)}
 
       '+'             { Token _ TokenPlus }
@@ -38,6 +39,7 @@ Exp   : Exp '+' Exp           { Plus $1 $3 }
       | '-' Exp %prec NEG     { Negate $2 }
       | int                   { Int $1 }
       | float                 { Float $1 }
+      | string                { String $1 }
       | id                    { Id $1 }
 
 {

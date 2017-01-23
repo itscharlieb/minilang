@@ -10,6 +10,9 @@ module Lexer
 
 $digit = 0-9 -- digits
 $alpha = [a-zA-Z] -- alphabetic characters
+$symbol = [\~ \# \$ \^ \& \* \- \+ \/ \` \> \< \= \_ \| \' \; \: \{ \} \[ \] \( \)]
+$escaped = [\a \b \f \n \r \t \v \" \\ \@ \! \? \. \,]
+$quotable = [$digit $alpha $symbol $escaped]
 
 
 -- All token actions have type ( AlexPosn -> String -> Token )
@@ -44,6 +47,8 @@ tokens :-
 
   $digit+                         { \p s -> Token p $ TokenIntVal (read s) }
   $digit+ . $digit+               { \p s -> Token p $ TokenFloatVal (read s) }
+  \" ( $quotable )* \"            { \p s -> Token p $ TokenStringVal s }
+
   $alpha [$alpha $digit \_ \’]*   { \p s -> Token p $ TokenId s }
 
 
