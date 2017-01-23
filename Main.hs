@@ -3,27 +3,19 @@
 module Main ( main ) where
 
 ----------------------------------------------------------------------------
-import Parser
-import Language
+import qualified Parser
+-- import qualified Language
+import System.Environment ( getArgs )
 ----------------------------------------------------------------------------
-
 main :: IO ()
 main = do
-    let test str expected = do
-            putStrLn ""
-            print $ str
-            print $ expected
-            let result = parse str
-            if expected == result
-                then putStrLn $ "OK."
-                else do putStrLn $ "Error: " ++ show result
-                        putStrLn $ "Expected: " ++ show expected
-
-    -- Should work
-    test "1 + 2 - 3" $ (Exp1 (Plus (Plus (Term (Factor (Int 1))) (Factor (Int 2))) (Factor (Int 3))))
-
-    -- Should fail in lexer
-    -- test "1 + 2 + % 3" $ Left (Error {errLine = 1, errPos = 9, errClass = Lexical})
-
-    -- Should fail in parser
-    -- test "1 + 2 + let 3" $ Left (Error {errLine = 1, errPos = 12, errClass = Syntactical Nothing})
+  args <- getArgs
+  print args
+  result <- case args of
+              []  -> error "expected 1 argument"
+              [file] -> do
+                program <- readFile file
+                return $ Parser.parse program
+              _   -> error "expected max. 1 argument"
+  print result
+  -- either putStrLn (print . eval []) result
