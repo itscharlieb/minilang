@@ -2,7 +2,7 @@ module Language where
 
 -- Expression data type
 data Exp
-  = Neg Exp
+  = Negate Exp
   | Plus Exp Exp
   | Minus Exp Exp
   | Times Exp Exp

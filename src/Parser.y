@@ -13,6 +13,7 @@ import Lexer
 
 %left '+' '-'
 %left '*' '/'
+%left NEG
 
 %token
       int             { Token _ (TokenIntVal $$) }
@@ -28,13 +29,14 @@ import Lexer
 
 %%
 
-Exp   : Exp '+' Exp      { Plus $1 $3 }
-      | Exp '-' Exp      { Minus $1 $3 }
-      | Exp '*' Exp      { Times $1 $3 }
-      | Exp '/' Exp      { Div $1 $3 }
-      | '(' Exp ')'      { Bracketed $2 }
-      | int              { Int $1 }
-      | id               { Id $1 }
+Exp   : Exp '+' Exp           { Plus $1 $3 }
+      | Exp '-' Exp           { Minus $1 $3 }
+      | Exp '*' Exp           { Times $1 $3 }
+      | Exp '/' Exp           { Div $1 $3 }
+      | '(' Exp ')'           { Bracketed $2 }
+      | '-' Exp %prec NEG     { Negate $2 }
+      | int                   { Int $1 }
+      | id                    { Id $1 }
 
 {
 
