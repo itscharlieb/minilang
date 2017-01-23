@@ -43,7 +43,7 @@ tokens :-
   \)                              { \p _ -> Token p TokenRParen }
 
   $digit+                         { \p s -> Token p $ TokenIntVal (read s) }
-  $alpha [$alpha $digit \_ \’]*   { \p s -> Token p $ TokenIdentifier s }
+  $alpha [$alpha $digit \_ \’]*   { \p s -> Token p $ TokenId s }
 
 
 {
@@ -55,7 +55,7 @@ data Token = Token AlexPosn TokenClass
 -- Each action has type :: String -> TokenClass -> Token
 data TokenClass
   = TokenVar
-  | TokenIdentifier String
+  | TokenId String
   | TokenFloatType
   | TokenFloatVal Float
   | TokenIntType

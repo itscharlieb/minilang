@@ -11,7 +11,7 @@ data Exp
   | Int Int
   | Float Float
   | String String
-  | Identifier String
+  | Id String
   deriving (Show, Eq)
 
 -- Parser expressions
