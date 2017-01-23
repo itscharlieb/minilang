@@ -43,6 +43,7 @@ tokens :-
   \)                              { \p _ -> Token p TokenRParen }
 
   $digit+                         { \p s -> Token p $ TokenIntVal (read s) }
+  $digit+ . $digit+               { \p s -> Token p $ TokenFloatVal (read s) }
   $alpha [$alpha $digit \_ \’]*   { \p s -> Token p $ TokenId s }
 
 
