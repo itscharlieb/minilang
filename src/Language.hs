@@ -2,6 +2,8 @@ module Language where
 
 data Stmt
   = Print Exp
+  | Read String
+  | Assign String Exp
   | Exp Exp
   deriving (Show, Eq)
 

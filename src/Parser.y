@@ -21,8 +21,11 @@ import Lexer
       string          { Token _ (TokenStringVal $$) }
       id              { Token _ (TokenId $$)}
 
-      print           { Token _ (TokenPrint) }
-      ';'             { Token _ (TokenSemicolon) }
+      print           { Token _ TokenPrint }
+      read            { Token _ TokenRead }
+
+      '='             { Token _ TokenEq}
+      ';'             { Token _ TokenSemicolon }
 
       '+'             { Token _ TokenPlus }
       '-'             { Token _ TokenMinus }
@@ -40,6 +43,8 @@ Stmts : Stmts ';' Stmt        { $3 : $1 }
       | {- empty -}           { [] }
 
 Stmt  : print Exp             { Print $2 }
+      | read id               { Read $2 }
+      | id '=' Exp            { Assign $1 $3 }
       | Exp                   { Exp $1 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
