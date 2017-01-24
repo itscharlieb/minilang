@@ -34,8 +34,8 @@ tokens :-
   print                           { \p _ -> Token p TokenPrint }
   read                            { \p _ -> Token p TokenRead }
 
-  \:                              { \p _ -> Token p TokenSemicolon }
-  \;                              { \p _ -> Token p TokenColon }
+  \:                              { \p _ -> Token p TokenColon }
+  \;                              { \p _ -> Token p TokenSemicolon }
 
   \=                              { \p _ -> Token p TokenEq }
   \+                              { \p _ -> Token p TokenPlus }
