@@ -4,6 +4,7 @@ data Stmt
   = Print Exp
   | Read String
   | Assign String Exp
+  | While Exp [Stmt]
   | Exp Exp
   deriving (Show, Eq)
 

@@ -2,3 +2,8 @@ print x * x;
 print y;
 read z;
 t = 4 * 5;
+
+while 3 * 4 do
+  print z;
+  read x;
+done

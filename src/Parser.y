@@ -23,6 +23,9 @@ import Lexer
 
       print           { Token _ TokenPrint }
       read            { Token _ TokenRead }
+      while           { Token _ TokenWhile }
+      do              { Token _ TokenDo }
+      done            { Token _ TokenDone }
 
       '='             { Token _ TokenEq}
       ';'             { Token _ TokenSemicolon }
@@ -45,6 +48,9 @@ Stmts : Stmts ';' Stmt        { $3 : $1 }
 Stmt  : print Exp             { Print $2 }
       | read id               { Read $2 }
       | id '=' Exp            { Assign $1 $3 }
+      | while Exp do
+          Stmts
+        done                  { While $2 $4}
       | Exp                   { Exp $1 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
