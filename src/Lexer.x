@@ -8,7 +8,7 @@ module Lexer
 
 %wrapper "posn"
 
-$digit = 0-9 -- digits
+$digit = [0-9] -- digits
 $alpha = [a-zA-Z] -- alphabetic characters
 $symbol = [\~ \# \$ \^ \& \* \- \+ \/ \` \> \< \= \_ \| \' \; \: \{ \} \[ \] \( \)]
 $escaped = [\a \b \f \n \r \t \v \" \\ \@ \! \? \. \,]
@@ -46,8 +46,11 @@ tokens :-
   \)                              { \p _ -> Token p TokenRParen }
 
   $digit+                         { \p s -> Token p $ TokenIntVal (read s) }
-  $digit+ . $digit+               { \p s -> Token p $ TokenFloatVal (read s) }
-  \" ( $quotable )* \"            { \p s -> Token p $ TokenStringVal s }
+
+  0 | ([1-9] $digit*)
+    "." $digit+                   { \p s -> Token p $ TokenFloatVal (read s) }
+
+  \" ( $quotable # \")* \"        { \p s -> Token p $ TokenStringVal s }
 
   $alpha [$alpha $digit \_ \’]*   { \p s -> Token p $ TokenId s }
 
