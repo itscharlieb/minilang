@@ -21,6 +21,9 @@ import Lexer
       string          { Token _ (TokenStringVal $$) }
       id              { Token _ (TokenId $$)}
 
+      print           { Token _ (TokenPrint) }
+      ';'             { Token _ (TokenSemicolon) }
+
       '+'             { Token _ TokenPlus }
       '-'             { Token _ TokenMinus }
       '*'             { Token _ TokenTimes }
@@ -30,6 +33,9 @@ import Lexer
       ')'             { Token _ TokenRParen }
 
 %%
+
+Stmt  : print Exp             { Print $2 }
+      | Exp                   { Exp $1 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
       | Exp '-' Exp           { Minus $1 $3 }
@@ -50,7 +56,7 @@ parseError _ = error "Parse error"
 
 
 -- Runs calc parser
-parse :: String -> Exp
+parse :: String -> Stmt
 parse = calc . lexer
 
 }

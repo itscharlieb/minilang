@@ -1,5 +1,10 @@
 module Language where
 
+data Stmt
+  = Print Exp
+  | Exp Exp
+  deriving (Show, Eq)
+
 -- Expression data type
 data Exp
   = Negate Exp
