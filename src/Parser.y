@@ -34,6 +34,11 @@ import Lexer
 
 %%
 
+Stmts : Stmts ';' Stmt        { $3 : $1 }
+      | Stmts ';'             { $1 }
+      | Stmt                  { [$1] }
+      | {- empty -}           { [] }
+
 Stmt  : print Exp             { Print $2 }
       | Exp                   { Exp $1 }
 
@@ -56,7 +61,7 @@ parseError _ = error "Parse error"
 
 
 -- Runs calc parser
-parse :: String -> Stmt
+parse :: String -> [Stmt]
 parse = calc . lexer
 
 }
