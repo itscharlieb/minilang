@@ -5,6 +5,7 @@ data Stmt
   | Read String
   | Assign String Exp
   | While Exp [Stmt]
+  | If Exp [Stmt] (Maybe [Stmt])
   | Exp Exp
   deriving (Show, Eq)
 

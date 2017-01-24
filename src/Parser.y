@@ -23,9 +23,15 @@ import Lexer
 
       print           { Token _ TokenPrint }
       read            { Token _ TokenRead }
+
       while           { Token _ TokenWhile }
       do              { Token _ TokenDo }
       done            { Token _ TokenDone }
+
+      if              { Token _ TokenIf }
+      then            { Token _ TokenThen}
+      else            { Token _ TokenElse}
+      endif           { Token _ TokenEndif}
 
       '='             { Token _ TokenEq}
       ';'             { Token _ TokenSemicolon }
@@ -51,6 +57,14 @@ Stmt  : print Exp             { Print $2 }
       | while Exp do
           Stmts
         done                  { While $2 $4}
+      | if Exp then
+          Stmts
+        endif                 { If $2 $4 Nothing }
+      | if Exp then
+          Stmts
+        else
+          Stmts
+        endif                 { If $2 $4 (Just $6) }
       | Exp                   { Exp $1 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
