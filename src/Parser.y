@@ -51,6 +51,18 @@ import Lexer
 
 %%
 
+Program
+      : Dclrs Stmts           { Program $1 $2 }
+
+Dclrs : Dclrs ';' Dclr        { $3 : $1 }
+      | Dclrs ';'             { $1 }
+      | Dclr                  { [$1] }
+      | {- empty -}           { [] }
+
+Dclr  : var id ':' int        { IntId $2 }
+      | var id ':' float      { FloatId $2 }
+      | var id ':' string     { StringId $2 }
+
 Stmts : Stmts ';' Stmt        { $3 : $1 }
       | Stmts ';'             { $1 }
       | Stmt                  { [$1] }
@@ -71,11 +83,6 @@ Stmt  : print Exp             { Print $2 }
           Stmts
         endif                 { If $2 $4 (Just $6) }
       | Exp                   { Exp $1 }
-      | Dclr                  { Dclr $1 }
-
-Dclr  : var id ':' int        { IntId $2 }
-      | var id ':' float      { FloatId $2 }
-      | var id ':' string     { StringId $2 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
       | Exp '-' Exp           { Minus $1 $3 }
@@ -96,7 +103,7 @@ parseError _ = error "Parse error"
 
 
 -- Runs calc parser
-parse :: String -> [Stmt]
+parse :: String -> Program
 parse = calc . lexer
 
 }
