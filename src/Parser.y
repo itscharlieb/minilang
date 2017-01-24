@@ -16,10 +16,15 @@ import Lexer
 %left NEG
 
 %token
-      int             { Token _ (TokenIntVal $$) }
-      float           { Token _ (TokenFloatVal $$) }
-      string          { Token _ (TokenStringVal $$) }
+      var             { Token _ TokenVar }
       id              { Token _ (TokenId $$)}
+      int             { Token _ TokenIntType }
+      float           { Token _ TokenFloatType }
+      string          { Token _ TokenStringType }
+
+      intVal          { Token _ (TokenIntVal $$) }
+      floatVal        { Token _ (TokenFloatVal $$) }
+      stringVal       { Token _ (TokenStringVal $$) }
 
       print           { Token _ TokenPrint }
       read            { Token _ TokenRead }
@@ -35,12 +40,12 @@ import Lexer
 
       '='             { Token _ TokenEq}
       ';'             { Token _ TokenSemicolon }
+      ':'             { Token _ TokenColon}
 
       '+'             { Token _ TokenPlus }
       '-'             { Token _ TokenMinus }
       '*'             { Token _ TokenTimes }
       '/'             { Token _ TokenDiv }
-
       '('             { Token _ TokenLParen }
       ')'             { Token _ TokenRParen }
 
@@ -66,6 +71,11 @@ Stmt  : print Exp             { Print $2 }
           Stmts
         endif                 { If $2 $4 (Just $6) }
       | Exp                   { Exp $1 }
+      | Dclr                  { Dclr $1 }
+
+Dclr  : var id ':' int        { IntId $2 }
+      | var id ':' float      { FloatId $2 }
+      | var id ':' string     { StringId $2 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
       | Exp '-' Exp           { Minus $1 $3 }
@@ -73,9 +83,9 @@ Exp   : Exp '+' Exp           { Plus $1 $3 }
       | Exp '/' Exp           { Div $1 $3 }
       | '(' Exp ')'           { Bracketed $2 }
       | '-' Exp %prec NEG     { Negate $2 }
-      | int                   { Int $1 }
-      | float                 { Float $1 }
-      | string                { String $1 }
+      | intVal                { Int $1 }
+      | floatVal              { Float $1 }
+      | stringVal             { String $1 }
       | id                    { Id $1 }
 
 {

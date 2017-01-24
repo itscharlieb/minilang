@@ -7,6 +7,14 @@ data Stmt
   | While Exp [Stmt]
   | If Exp [Stmt] (Maybe [Stmt])
   | Exp Exp
+  | Dclr Dclr
+  deriving (Show, Eq)
+
+-- Declerations
+data Dclr
+  = IntId String
+  | FloatId String
+  | StringId String
   deriving (Show, Eq)
 
 -- Expression data type
