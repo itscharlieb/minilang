@@ -64,10 +64,15 @@ Dclr  : var id ':' int ';'    { IntId $2 }
 Stmts : Stmts Stmt            { $2 : $1 }
       | {- empty -}           { [] }
 
-Stmt  : print Exp ';'         { Print $2 }
-      | read id ';'           { Read $2 }
-      | id '=' Exp ';'        { Assign $1 $3 }
-      | while Exp do
+Stmt  : Smpl ';'              { $1 }
+      | Ctrl                  { $1 }
+
+Smpl  : print Exp             { Print $2 }
+      | read id               { Read $2 }
+      | id '=' Exp            { Assign $1 $3 }
+      | Exp                   { Exp $1 }
+
+Ctrl  : while Exp do
           Stmts
         done                  { While $2 $4}
       | if Exp then
@@ -78,7 +83,6 @@ Stmt  : print Exp ';'         { Print $2 }
         else
           Stmts
         endif                 { IfElse $2 $4 $6 }
-      | Exp ';'               { Exp $1 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
       | Exp '-' Exp           { Minus $1 $3 }
