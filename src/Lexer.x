@@ -11,8 +11,8 @@ module Lexer
 $digit = [0-9] -- digits
 $alpha = [a-zA-Z] -- alphabetic characters
 $symbol = [\~ \# \$ \^ \& \* \- \+ \/ \` \> \< \= \_ \| \' \; \: \{ \} \[ \] \( \)]
-$escaped = [\a \b \f \n \r \t \v \" \\ \@ \! \? \. \,]
-$quotable = [$digit $alpha $symbol $escaped]
+$escaped = [\" a b f n r t v \\]
+$graphic = [$digit $alpha $white $symbol]
 
 
 -- All token actions have type ( AlexPosn -> String -> Token )
@@ -50,7 +50,7 @@ tokens :-
   0 | ([1-9] $digit*)
     "." $digit+                   { \p s -> Token p $ TokenFloatVal (read s) }
 
-  \" ( $quotable # \")* \"        { \p s -> Token p $ TokenStringVal s }
+  \"($graphic|(\\$escaped))*\"    { \p s -> Token p $ TokenStringVal s }
 
   $alpha [$alpha $digit \_ \’]*   { \p s -> Token p $ TokenId s }
 
