@@ -1,4 +1,4 @@
-
+// This computes square root.
 
 var x: float;
 var guess: float;
