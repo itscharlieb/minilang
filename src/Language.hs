@@ -18,7 +18,8 @@ data Stmt
   | Read String
   | Assign String Exp
   | While Exp [Stmt]
-  | If Exp [Stmt] (Maybe [Stmt])
+  | If Exp [Stmt]
+  | IfElse Exp [Stmt] [Stmt]
   | Exp Exp
   deriving (Show, Eq)
 
