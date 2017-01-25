@@ -45,10 +45,9 @@ tokens :-
   \(                              { \p _ -> Token p TokenLParen }
   \)                              { \p _ -> Token p TokenRParen }
 
-  $digit+                         { \p s -> Token p $ TokenIntVal (read s) }
+  0|[1-9][0-9]*                         { \p s -> Token p $ TokenIntVal (read s) }
 
-  0 | ([1-9] $digit*)
-    "." $digit+                   { \p s -> Token p $ TokenFloatVal (read s) }
+  (0|([1-9][0-9]*))\.[0-9]*                   { \p s -> Token p $ TokenFloatVal (read s) }
 
   \"($graphic|(\\$escaped))*\"    { \p s -> Token p $ TokenStringVal s }
 
