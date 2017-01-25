@@ -17,4 +17,3 @@ main = do
                 return $ parse program
               _   -> error "expected max. 1 argument"
   print result
-  -- either putStrLn (print . eval []) result
