@@ -11,13 +11,13 @@ t = 4 * 5;
 while 3 * 4 do
   print z;
   read x;
-done;
+done
 
 if 4 then
   x = 5;
   4 + 3;
   print y;
-endif;
+endif
 
 if 5 * 9 then
   x = 2;

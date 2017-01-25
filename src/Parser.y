@@ -54,23 +54,19 @@ import Lexer
 Program
       : Dclrs Stmts           { Program $1 $2 }
 
-Dclrs : Dclrs ';' Dclr        { $3 : $1 }
-      | Dclrs ';'             { $1 }
-      | Dclr                  { [$1] }
+Dclrs : Dclrs Dclr            { $2 : $1 }
       | {- empty -}           { [] }
 
-Dclr  : var id ':' int        { IntId $2 }
-      | var id ':' float      { FloatId $2 }
-      | var id ':' string     { StringId $2 }
+Dclr  : var id ':' int ';'    { IntId $2 }
+      | var id ':' float ';'  { FloatId $2 }
+      | var id ':' string ';' { StringId $2 }
 
-Stmts : Stmts ';' Stmt        { $3 : $1 }
-      | Stmts ';'             { $1 }
-      | Stmt                  { [$1] }
+Stmts : Stmts Stmt            { $2 : $1 }
       | {- empty -}           { [] }
 
-Stmt  : print Exp             { Print $2 }
-      | read id               { Read $2 }
-      | id '=' Exp            { Assign $1 $3 }
+Stmt  : print Exp ';'         { Print $2 }
+      | read id ';'           { Read $2 }
+      | id '=' Exp ';'        { Assign $1 $3 }
       | while Exp do
           Stmts
         done                  { While $2 $4}
@@ -82,7 +78,7 @@ Stmt  : print Exp             { Print $2 }
         else
           Stmts
         endif                 { IfElse $2 $4 $6 }
-      | Exp                   { Exp $1 }
+      | Exp ';'               { Exp $1 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
       | Exp '-' Exp           { Minus $1 $3 }
