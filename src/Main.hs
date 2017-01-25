@@ -3,8 +3,7 @@
 module Main ( main ) where
 
 ----------------------------------------------------------------------------
-import qualified Parser
--- import qualified Language
+import Compiler
 import System.Environment ( getArgs )
 ----------------------------------------------------------------------------
 main :: IO ()
@@ -15,7 +14,7 @@ main = do
               []  -> error "expected 1 argument"
               [file] -> do
                 program <- readFile file
-                return $ Parser.parse program
+                return $ parse program
               _   -> error "expected max. 1 argument"
   print result
   -- either putStrLn (print . eval []) result

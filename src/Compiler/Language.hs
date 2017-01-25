@@ -1,4 +1,4 @@
-module Language where
+module Compiler.Language where
 
 -- Program root data type
 data Program

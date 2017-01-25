@@ -1,5 +1,5 @@
 {
-module Lexer
+module Compiler.Lexer
   ( Token(..)
   , TokenClass(..)
   , lexer

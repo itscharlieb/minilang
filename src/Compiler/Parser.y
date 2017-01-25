@@ -1,10 +1,10 @@
 {
 {-# OPTIONS -w #-}
 
-module Parser ( parse ) where
+module Compiler.Parser ( parse ) where
 
-import Language
-import Lexer
+import Compiler.Language
+import Compiler.Lexer
 }
 
 %name calc
