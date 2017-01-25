@@ -99,7 +99,7 @@ Exp   : Exp '+' Exp           { Plus $1 $3 }
 
 -- Parser errors
 parseError :: [Token] -> a
-parseError _ = error "Parse error"
+parseError _ = error "INVALID: parse error"
 
 
 -- Runs calc parser

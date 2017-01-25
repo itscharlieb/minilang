@@ -94,10 +94,4 @@ data TokenClass
 lexer :: String -> [Token]
 lexer = alexScanTokens
 
-
-main :: IO ()
-main = do
-  program <- getLine
-  print $ lexer program
-
 }

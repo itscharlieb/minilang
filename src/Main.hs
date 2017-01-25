@@ -16,4 +16,4 @@ main = do
                 program <- readFile file
                 return $ parse program
               _   -> error "expected max. 1 argument"
-  print result
+  putStrLn $ "VALID: " ++ show result
