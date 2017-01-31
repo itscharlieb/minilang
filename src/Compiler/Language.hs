@@ -30,7 +30,6 @@ data Exp
   | Minus Exp Exp
   | Times Exp Exp
   | Div Exp Exp
-  | Bracketed Exp
   | Int Int
   | Float Float
   | String String
