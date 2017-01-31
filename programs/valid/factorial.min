@@ -1,0 +1,14 @@
+// Computes factorial of input number
+
+var x: int;
+var fact: int;
+
+read x;
+fact = x;
+
+while x do
+  fact = x * (x - 1);
+  x = x -1;
+done
+
+print x;
