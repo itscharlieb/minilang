@@ -1,2 +1,4 @@
 .stack-work
 *.log
+*.DS_Store
+submissions/
