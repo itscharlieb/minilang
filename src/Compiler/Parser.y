@@ -104,6 +104,9 @@ parseError _ = error "INVALID: parse error"
 
 -- Runs calc parser
 parse :: String -> Program
-parse = calc . lexer
+parse s =
+  let (Program dclrs stmts) = calc $ lexer s in
+    Program (reverse dclrs) (reverse stmts)
+
 
 }
