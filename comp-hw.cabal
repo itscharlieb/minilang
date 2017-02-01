@@ -17,6 +17,8 @@ executable parser
                      , Compiler.Parser
                      , Compiler.Lexer
                      , Compiler.Language
+                     , Compiler.SymbolTable
+                     , Compiler.TypeChecker
   build-depends:       base >= 3 && < 5
                      , array
   build-tools:         happy

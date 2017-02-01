@@ -10,10 +10,16 @@ main :: IO ()
 main = do
   args <- getArgs
   print args
-  result <- case args of
+  program <- case args of
               []  -> error "expected 1 argument"
               [file] -> do
-                program <- readFile file
-                return $ parse program
+                text <- readFile file
+                return $ parse text
               _   -> error "expected max. 1 argument"
-  putStr $ "VALID:\n" ++ pretty result
+  putStrLn "============================="
+  putStrLn "------------PARSE------------"
+  putStr $ "VALID:\n" ++ pretty program
+  putStrLn "----------TYPE CHECK---------"
+  putStr $ show $ typeCheck program
+  putStrLn "\n------------DONE-------------"
+  putStrLn "=============================\n"
