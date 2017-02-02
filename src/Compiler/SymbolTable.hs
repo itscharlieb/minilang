@@ -1,11 +1,18 @@
-module Compiler.SymbolTable where
+module Compiler.SymbolTable
+  ( SymbolTable
+  , Symbol
+  , Type(..)
+  , empty
+  , insert
+  , get
+  ) where
 
 
-import Data.List(find)
+import qualified Data.Map as Map
 
 
 -- symbol table is a list of name->type mappings
-type SymbolTable = [(String, Type)]
+type SymbolTable = Map.Map String Type
 
 
 -- Symbol type
@@ -22,20 +29,19 @@ data Type
 
 --
 empty :: SymbolTable
-empty = []
+empty = Map.empty
 
 
 --
 insert :: SymbolTable -> Symbol -> Either String SymbolTable
 insert table (name, t) =
-  case find (\(n, _) -> n == name) table of
-    Just _ -> Left $ "Symbol " ++ name ++ " already exists"
-    Nothing -> Right $ (name, t):table
+  case Map.member name table of
+    True -> Left $ "Symbol " ++ name ++ " already exists"
+    False -> Right $ Map.insert name t table
 
 
 --
 get :: SymbolTable -> String -> Maybe Symbol
-get [] _ = Nothing
-get ((n, t):st) name =
-  if n == name then Just (n, t)
-  else get st name
+get table name = case Map.lookup name table of
+  Nothing -> Nothing
+  Just t -> Just (name, t)

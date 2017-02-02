@@ -21,6 +21,7 @@ executable parser
                      , Compiler.TypeChecker
   build-depends:       base >= 3 && < 5
                      , array
+                     , containers
   build-tools:         happy
                      , alex
   ghc-options: -Wall
