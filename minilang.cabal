@@ -1,0 +1,49 @@
+name:                minilang
+version:             0.1.0.0
+author:              Charlie Bloomfield <charlielbloomfield@gmail.com>
+maintainer:          (none)
+build-type:          Simple
+cabal-version:       >=1.8
+
+
+executable minilang-exe
+  main-is:             Main.hs
+  hs-source-dirs:      app
+  build-depends:       minilang
+                     , base >= 4
+                     , array
+                     , containers
+  build-tools:         happy
+                     , alex
+  ghc-options: -Wall
+
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Compiler
+                     , Compiler.Parser
+                     , Compiler.Lexer
+                     , Compiler.Language
+                     , Compiler.SymbolTable
+                     , Compiler.TypeChecker
+                     , Compiler.Generator
+  build-depends:       base >= 4
+                     , array
+                     , containers
+  build-tools:         happy
+                     , alex
+  ghc-options: -Wall
+
+
+test-suite spec
+  type:                exitcode-stdio-1.0
+  ghc-options:
+    -Wall
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  default-language:    Haskell2010
+  build-depends:
+    base >=4.8 && <4.10,
+    hspec >=2.1 && <2.3,
+    QuickCheck >=2.8 && <2.9,
+    minilang
