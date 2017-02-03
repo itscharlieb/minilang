@@ -1,10 +1,29 @@
 module Compiler.Language where
 
 
+-- prettyIndented typeclass
+class Pretty a where
+  pretty :: a -> String
+  pretty a = prettyIndented a ""
+
+  prettyList :: [a] -> String -> String
+  prettyList xs indent = unlines $ map (`prettyIndented` indent) xs
+
+  prettyIndented :: a -> String -> String
+  prettyIndented a _ = pretty a
+
+
+
 -- Program root data type
 data Program
   = Program [Dclr] [Stmt]
   deriving (Show, Eq)
+
+
+--
+instance Pretty Program where
+  prettyIndented (Program dclrs stmts) indent =
+    prettyList dclrs indent ++ "\n" ++ prettyList stmts indent
 
 
 -- Declarations
@@ -13,6 +32,13 @@ data Dclr
   | FloatId String
   | StringId String
   deriving (Show, Eq)
+
+
+--
+instance Pretty Dclr where
+  pretty (IntId name) = "var " ++ name ++ ": int;"
+  pretty (FloatId name) = "var " ++ name ++ ": float;"
+  pretty (StringId name) = "var " ++ name ++ ": string;"
 
 
 -- Statements
@@ -25,6 +51,30 @@ data Stmt
   | IfElse Exp [Stmt] [Stmt]
   | Exp Exp
   deriving (Show, Eq)
+
+
+instance Pretty Stmt where
+  prettyIndented (Print e) i = i ++ "print " ++ pretty e ++ ";"
+  prettyIndented (Read name) i = i ++ "read " ++ name ++ ";"
+  prettyIndented (Assign name e) i = i ++ name ++ " = " ++ pretty e ++ ";"
+  prettyIndented (While e stmts) i = concat
+    [ i ++ "while " ++ pretty e ++ " do\n"
+    , prettyList stmts ('\t':i)
+    , i ++ "done"
+    ]
+  prettyIndented (If e stmts) i = concat
+    [ i ++ "if " ++ pretty e ++ " then\n"
+    , prettyList stmts ('\t':i)
+    , i ++ "endif"
+    ]
+  prettyIndented (IfElse e stmts1 stmts2) i = concat
+    [ i ++ "if " ++ pretty e ++ " then\n"
+    , prettyList stmts1 ('\t':i)
+    , i ++ "else\n"
+    , prettyList stmts2 ('\t':i)
+    , i ++ "endif"
+    ]
+  prettyIndented (Exp e) i = i ++ pretty e
 
 
 -- Expression data type
@@ -41,65 +91,20 @@ data Exp
   deriving (Show, Eq)
 
 
--- |Converts program to a pretty string using \t and \n as whitespace chars
-pretty :: Program -> String
-pretty (Program dclrs stmts) =
-  prettyDclrs dclrs ++ "\n" ++ prettyStmts stmts ""
+--
+instance Pretty Exp where
+  pretty (Negate e) = "-" ++ pretty e
+  pretty (Plus e1 e2) = prettyBinary e1 e2 "+"
+  pretty (Minus e1 e2) = prettyBinary e1 e2 "-"
+  pretty (Times e1 e2) = prettyBinary e1 e2 "*"
+  pretty (Div e1 e2) = prettyBinary e1 e2 "/"
+  pretty (Int i) = show i
+  pretty (Float f) = show f
+  pretty (String s) = s
+  pretty (Id s) = s
 
 
--- |Converts declaration to a pretty string.
-prettyDclrs :: [Dclr] -> String
-prettyDclrs [] = ""
-prettyDclrs (dclr:dclrs) =
-  prettyDclr dclr ++ "\n" ++ prettyDclrs dclrs
-
-
--- |Converts declaration to a pretty string.
-prettyDclr :: Dclr -> String
-prettyDclr (IntId name) = "var " ++ name ++ ": int;"
-prettyDclr (FloatId name) = "var " ++ name ++ ": float;"
-prettyDclr (StringId name) = "var " ++ name ++ ": string;"
-
-
--- |Converts statement list to a pretty string.
-prettyStmts :: [Stmt] -> String -> String
-prettyStmts [] _ = ""
-prettyStmts (stmt:stmts) indent =
-  indent ++ prettyStmt stmt indent ++ "\n" ++ prettyStmts stmts indent
-
-
--- |Converts statement to a pretty string.
-prettyStmt :: Stmt -> String -> String
-prettyStmt (Print e) _ = "print " ++ prettyExp e ++ ";"
-prettyStmt (Read name) _ = "read " ++ name ++ ";"
-prettyStmt (Assign name e) _ = name ++ " = " ++ prettyExp e ++ ";"
-prettyStmt (While e stmts) indent =
-  "while " ++ prettyExp e ++ " do\n"
-    ++ prettyStmts stmts ('\t':indent) ++ indent ++ "done"
-prettyStmt (If e stmts) indent =
-  "if " ++ prettyExp e ++ " then\n"
-    ++ prettyStmts stmts ('\t':indent) ++ "endif"
-prettyStmt (IfElse e stmts1 stmts2) indent =
-  "if " ++ prettyExp e ++ " then\n"
-    ++ prettyStmts stmts1 ('\t':indent) ++ indent ++ "else\n"
-    ++ prettyStmts stmts2 ('\t':indent) ++ indent ++ "endif"
-prettyStmt (Exp e) _ = prettyExp e
-
-
--- |Converts expression to a pretty string.
-prettyExp :: Exp -> String
-prettyExp (Negate e) = "-" ++ prettyExp e
-prettyExp (Plus e1 e2) = prettyBinary e1 e2 "+"
-prettyExp (Minus e1 e2) = prettyBinary e1 e2 "-"
-prettyExp (Times e1 e2) = prettyBinary e1 e2 "*"
-prettyExp (Div e1 e2) = prettyBinary e1 e2 "/"
-prettyExp (Int i) = show i
-prettyExp (Float f) = show f
-prettyExp (String s) = s
-prettyExp (Id s) = s
-
-
--- |Helper function that converts any binary operation to a pretty string.
+-- |Helper function that converts any binary operation to a prettyIndented string.
 prettyBinary :: Exp -> Exp -> String -> String
 prettyBinary e1 e2 op =
-  "(" ++ prettyExp e1 ++ " " ++ op ++ " " ++ prettyExp e2 ++ ")"
+  "(" ++ pretty e1 ++ " " ++ op ++ " " ++ pretty e2 ++ ")"
