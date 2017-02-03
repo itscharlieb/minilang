@@ -21,5 +21,7 @@ main = do
   putStr $ "VALID:\n" ++ pretty program
   putStrLn "----------TYPE CHECK---------"
   putStr $ show $ typeCheck program
+  putStrLn "\n----------GENERATED----------"
+  putStr $ generate program
   putStrLn "\n------------DONE-------------"
   putStrLn "=============================\n"
