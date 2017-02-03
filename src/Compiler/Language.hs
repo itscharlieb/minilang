@@ -1,29 +1,10 @@
 module Compiler.Language where
 
 
--- prettyIndented typeclass
-class Pretty a where
-  pretty :: a -> String
-  pretty a = prettyIndented a ""
-
-  prettyList :: [a] -> String -> String
-  prettyList xs indent = unlines $ map (`prettyIndented` indent) xs
-
-  prettyIndented :: a -> String -> String
-  prettyIndented a _ = pretty a
-
-
-
 -- Program root data type
 data Program
   = Program [Dclr] [Stmt]
   deriving (Show, Eq)
-
-
---
-instance Pretty Program where
-  prettyIndented (Program dclrs stmts) indent =
-    prettyList dclrs indent ++ "\n" ++ prettyList stmts indent
 
 
 -- Declarations
@@ -32,13 +13,6 @@ data Dclr
   | FloatId String
   | StringId String
   deriving (Show, Eq)
-
-
---
-instance Pretty Dclr where
-  pretty (IntId name) = "var " ++ name ++ ": int;"
-  pretty (FloatId name) = "var " ++ name ++ ": float;"
-  pretty (StringId name) = "var " ++ name ++ ": string;"
 
 
 -- Statements
@@ -53,6 +27,47 @@ data Stmt
   deriving (Show, Eq)
 
 
+-- Expression data type
+data Exp
+  = Negate Exp
+  | Plus Exp Exp
+  | Minus Exp Exp
+  | Times Exp Exp
+  | Div Exp Exp
+  | Int Int
+  | Float Float
+  | String String
+  | Id String
+  deriving (Show, Eq)
+
+
+-- prettyIndented typeclass
+class Pretty a where
+  pretty :: a -> String
+  pretty a = prettyIndented a ""
+
+  prettyList :: [a] -> String -> String
+  prettyList xs indent = unlines $ map (`prettyIndented` indent) xs
+
+  prettyIndented :: a -> String -> String
+  prettyIndented a i = i ++ pretty a
+
+
+
+--
+instance Pretty Program where
+  prettyIndented (Program dclrs stmts) indent =
+    prettyList dclrs indent ++ "\n" ++ prettyList stmts indent
+
+
+--
+instance Pretty Dclr where
+  pretty (IntId name) = "var " ++ name ++ ": int;"
+  pretty (FloatId name) = "var " ++ name ++ ": float;"
+  pretty (StringId name) = "var " ++ name ++ ": string;"
+
+
+--
 instance Pretty Stmt where
   prettyIndented (Print e) i = i ++ "print " ++ pretty e ++ ";"
   prettyIndented (Read name) i = i ++ "read " ++ name ++ ";"
@@ -75,20 +90,6 @@ instance Pretty Stmt where
     , i ++ "endif"
     ]
   prettyIndented (Exp e) i = i ++ pretty e
-
-
--- Expression data type
-data Exp
-  = Negate Exp
-  | Plus Exp Exp
-  | Minus Exp Exp
-  | Times Exp Exp
-  | Div Exp Exp
-  | Int Int
-  | Float Float
-  | String String
-  | Id String
-  deriving (Show, Eq)
 
 
 --
