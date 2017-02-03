@@ -1,30 +1,16 @@
-module Compiler.SymbolTable
-  ( SymbolTable
-  , Symbol
-  , Type(..)
-  , empty
-  , insert
-  , get
-  ) where
+module Compiler.SymbolTable where
 
 
+import Compiler.Language
 import qualified Data.Map as Map
 
 
 -- symbol table is a list of name->type mappings
-type SymbolTable = Map.Map String Type
+type SymbolTable = Map.Map String PrimType
 
 
 -- Symbol type
-type Symbol = (String, Type)
-
-
--- variable types
-data Type
-  = IntType
-  | FloatType
-  | StringType
-  deriving (Show, Eq)
+type Symbol = (String, PrimType)
 
 
 --

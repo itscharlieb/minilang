@@ -62,12 +62,12 @@ validateStatement (Exp e) table =
 
 
 --
-validateExpression :: Exp -> SymbolTable -> Either String Type
+validateExpression :: Exp -> SymbolTable -> Either String PrimType
 validateExpression (Negate e) table =
   case validateExpression e table of
     Left errorMsg -> Left errorMsg
     Right type' -> case type' of
-      StringType -> Left "Unary negation on String type not permitted"
+      TString -> Left "Unary negation on String type not permitted"
       _ -> Right type'
 validateExpression (Plus e1 e2) table = validateStandardBinaryOp e1 e2 table
 validateExpression (Minus e1 e2) table = validateStandardBinaryOp e1 e2 table
@@ -76,18 +76,18 @@ validateExpression (Times e1 e2) table =
     (Left errorMsg, _) -> Left errorMsg
     (_, Left errorMsg) -> Left errorMsg
     (Right t1, Right t2) -> case (t1, t2) of
-      (IntType, IntType) -> Right IntType
-      (IntType, FloatType) -> Right FloatType
-      (IntType, StringType) -> Right StringType
-      (FloatType, IntType) -> Right FloatType
-      (FloatType, FloatType) -> Right FloatType
-      (StringType, IntType) -> Right StringType
+      (TInt, TInt) -> Right TInt
+      (TInt, TFloat) -> Right TFloat
+      (TInt, TString) -> Right TString
+      (TFloat, TInt) -> Right TFloat
+      (TFloat, TFloat) -> Right TFloat
+      (TString, TInt) -> Right TString
       (_, _) -> Left $ "Binary operation on types " ++ show t1
         ++ " and " ++ show t2 ++ " is not defined"
 validateExpression (Div e1 e2) table = validateStandardBinaryOp e1 e2 table
-validateExpression (Int _) _ = Right IntType
-validateExpression (Float _) _ = Right FloatType
-validateExpression (String _) _ = Right StringType
+validateExpression (Int _) _ = Right TInt
+validateExpression (Float _) _ = Right TFloat
+validateExpression (String _) _ = Right TString
 validateExpression (Id name) table =
   case get table name of
     Nothing -> Left $ "Name " ++ name ++ " hasn't been declared"
@@ -95,17 +95,17 @@ validateExpression (Id name) table =
 
 
 --
-validateStandardBinaryOp :: Exp -> Exp -> SymbolTable -> Either String Type
+validateStandardBinaryOp :: Exp -> Exp -> SymbolTable -> Either String PrimType
 validateStandardBinaryOp e1 e2 table =
   case (validateExpression e1 table, validateExpression e2 table) of
     (Left errorMsg, _) -> Left errorMsg
     (_, Left errorMsg) -> Left errorMsg
     (Right t1, Right t2) -> case (t1, t2) of
-      (IntType, IntType) -> Right IntType
-      (FloatType, FloatType) -> Right FloatType
-      (IntType, FloatType) -> Right FloatType
-      (FloatType, IntType) -> Right FloatType
-      (StringType, StringType) -> Right StringType
+      (TInt, TInt) -> Right TInt
+      (TFloat, TFloat) -> Right TFloat
+      (TInt, TFloat) -> Right TFloat
+      (TFloat, TInt) -> Right TFloat
+      (TString, TString) -> Right TString
       _ -> Left $ "Binary operation doesn't permit types "
         ++ show t1 ++ " and " ++ show t2
 
@@ -122,6 +122,4 @@ buildTable dclrs = buildTable' dclrs empty where
 
 --
 insert' :: SymbolTable -> Dclr -> Either String SymbolTable
-insert' table (IntId name) = insert table (name, IntType)
-insert' table (FloatId name) = insert table (name, FloatType)
-insert' table (StringId name) = insert table (name, StringType)
+insert' table (Dclr name primType) = insert table (name, primType)

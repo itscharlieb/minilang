@@ -57,9 +57,9 @@ Program
 Dclrs : Dclrs Dclr            { $2 : $1 }
       | {- empty -}           { [] }
 
-Dclr  : var id ':' int ';'    { IntId $2 }
-      | var id ':' float ';'  { FloatId $2 }
-      | var id ':' string ';' { StringId $2 }
+Dclr  : var id ':' int ';'    { Dclr $2 TInt }
+      | var id ':' float ';'  { Dclr $2 TFloat }
+      | var id ':' string ';' { Dclr $2 TString }
 
 Stmts : Stmts Stmt            { $2 : $1 }
       | {- empty -}           { [] }

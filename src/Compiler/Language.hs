@@ -1,6 +1,14 @@
 module Compiler.Language where
 
 
+--
+data PrimType
+  = TInt
+  | TFloat
+  | TString
+  deriving (Show, Eq)
+
+
 -- Program root data type
 data Program
   = Program [Dclr] [Stmt]
@@ -9,9 +17,7 @@ data Program
 
 -- Declarations
 data Dclr
-  = IntId String
-  | FloatId String
-  | StringId String
+  = Dclr String PrimType
   deriving (Show, Eq)
 
 
@@ -62,9 +68,14 @@ instance Pretty Program where
 
 --
 instance Pretty Dclr where
-  pretty (IntId name) = "var " ++ name ++ ": int;"
-  pretty (FloatId name) = "var " ++ name ++ ": float;"
-  pretty (StringId name) = "var " ++ name ++ ": string;"
+  pretty (Dclr name prim) = "var " ++ name ++ ": " ++ pretty prim ++ ";"
+
+
+--
+instance Pretty PrimType where
+  pretty TInt = "int"
+  pretty TFloat = "float"
+  pretty TString = "string"
 
 
 --

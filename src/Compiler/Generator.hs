@@ -21,9 +21,9 @@ generateDclrs dclrs = unlines $ map generateDclr dclrs
 
 --
 generateDclr :: Dclr -> String
-generateDclr (IntId name) = "int " ++ name ++ ";"
-generateDclr (FloatId name) = "float " ++ name ++ ";"
-generateDclr (StringId name) = "char* " ++ name ++ ";"
+generateDclr (Dclr name TInt) = "int " ++ name ++ ";"
+generateDclr (Dclr name TFloat) = "float " ++ name ++ ";"
+generateDclr (Dclr name TString) = "char* " ++ name ++ ";"
 
 
 --
