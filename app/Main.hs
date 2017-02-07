@@ -6,6 +6,7 @@ module Main ( main ) where
 import Compiler
 import System.Environment ( getArgs )
 import System.FilePath
+import System.Exit
 
 
 --
@@ -29,6 +30,7 @@ compile fp = do
   case parse fp text of
     Left errorMsg -> do
       putStrLn errorMsg
+      exitFailure
     Right program -> do
       let prettyFile = replaceExtension fp "pretty.min" in
         writeFile prettyFile (pretty program)
