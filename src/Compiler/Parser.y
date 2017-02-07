@@ -80,12 +80,12 @@ Ctrl  : while Exp do
         done                  { While $2 $4}
       | if Exp then
           Stmts
-        endif                 { If $2 $4 }
+        endif                 { If $2 $4 [] }
       | if Exp then
           Stmts
         else
           Stmts
-        endif                 { IfElse $2 $4 $6 }
+        endif                 { If $2 $4 $6 }
 
 Exp   : Exp '+' Exp           { Plus $1 $3 }
       | Exp '-' Exp           { Minus $1 $3 }

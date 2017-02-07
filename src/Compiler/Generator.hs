@@ -42,9 +42,9 @@ generateStmt (Read name) = "scanf();"
 generateStmt (Assign name e) = name ++ " = " ++ generateExp e ++ ";"
 generateStmt (While e stmts) =
   "while (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts ++ "}"
-generateStmt (If e stmts) =
+generateStmt (If e stmts []) =
   "if (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts ++ "}"
-generateStmt (IfElse e stmts1 stmts2) =
+generateStmt (If e stmts1 stmts2) =
   "if (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts1
     ++ "} else if {\n" ++ generateStmts stmts2 ++ "}"
 generateStmt (Exp e) = generateExp e

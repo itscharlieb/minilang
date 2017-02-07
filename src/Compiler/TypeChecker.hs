@@ -45,11 +45,7 @@ validateStatement (While e stmts) table =
   case validateExpression e table of
     Left errorMsg -> Just errorMsg
     Right _ -> validateStatements stmts table
-validateStatement (If e stmts) table =
-  case validateExpression e table of
-    Left errorMsg -> Just errorMsg
-    Right _ -> validateStatements stmts table
-validateStatement (IfElse e stmts1 stmts2) table =
+validateStatement (If e stmts1 stmts2) table =
   case validateExpression e table of
     Left errorMsg -> Just errorMsg
     Right _ -> case validateStatements stmts1 table of

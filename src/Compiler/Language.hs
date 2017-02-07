@@ -27,8 +27,7 @@ data Stmt
   | Read String
   | Assign String Exp
   | While Exp [Stmt]
-  | If Exp [Stmt]
-  | IfElse Exp [Stmt] [Stmt]
+  | If Exp [Stmt] [Stmt]
   | Exp Exp
   deriving (Show, Eq)
 
@@ -88,12 +87,12 @@ instance Pretty Stmt where
     , prettyList stmts ('\t':i)
     , i ++ "done"
     ]
-  prettyIndented (If e stmts) i = concat
+  prettyIndented (If e stmts []) i = concat
     [ i ++ "if " ++ pretty e ++ " then\n"
     , prettyList stmts ('\t':i)
     , i ++ "endif"
     ]
-  prettyIndented (IfElse e stmts1 stmts2) i = concat
+  prettyIndented (If e stmts1 stmts2) i = concat
     [ i ++ "if " ++ pretty e ++ " then\n"
     , prettyList stmts1 ('\t':i)
     , i ++ "else\n"
