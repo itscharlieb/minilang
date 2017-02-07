@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Added by Charlie for cleaning generated files before rerunning tests
+./clean.sh
+
 # 1. Build the compiler.
 #
 # You *MUST* provide a build.sh script in the root directory
