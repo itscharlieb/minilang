@@ -13,6 +13,7 @@ executable minilang-exe
                      , base >= 4
                      , array
                      , containers
+                     , filepath >= 1
   build-tools:         happy
                      , alex
   ghc-options: -Wall

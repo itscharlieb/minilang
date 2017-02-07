@@ -2,34 +2,37 @@
 
 module Main ( main ) where
 
-----------------------------------------------------------------------------
+
 import Compiler
 import System.Environment ( getArgs )
-----------------------------------------------------------------------------
+import System.FilePath
+
+
+--
 main :: IO ()
 main = do
   args <- getArgs
   print args
 
   -- Parse Program
-  program <- case args of
+  case args of
     []  -> error "expected 1 argument"
-    [file] -> do
-      text <- readFile file
-      return $ parse file text
+    [filePath] -> compile filePath
     _ -> error "expected max. 1 argument"
 
-  --
-  case program of
+
+--
+compile :: FilePath -> IO ()
+compile fp = do
+  text <- readFile fp
+
+  case parse fp text of
     Left errorMsg -> do
       putStrLn errorMsg
     Right program -> do
-      putStrLn "============================="
-      putStrLn "------------PRETTY-----------"
-      putStr $ "VALID:\n" ++ pretty program
-      putStrLn "----------TYPE CHECK---------"
-      putStr $ show $ typeCheck program
-      putStrLn "\n----------GENERATED----------"
-      putStr $ generate program
-      putStrLn "\n------------DONE-------------"
-      putStrLn "=============================\n"
+      let prettyFile = replaceExtension fp "pretty.min" in
+        writeFile prettyFile (pretty program)
+      let symbolFile = replaceExtension fp "symbol.txt" in
+        writeFile symbolFile $ show $ typeCheck program
+      let cFile = replaceExtension fp ".c" in
+        writeFile cFile (generate program)
