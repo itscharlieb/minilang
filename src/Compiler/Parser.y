@@ -9,6 +9,9 @@ import Compiler.Lexer
 
 %name calc
 %tokentype { Token }
+
+%monad { Alex }
+%lexer { lexwrap } { Token _ TokenEOF }
 %error { parseError }
 
 %left '+' '-'
@@ -97,16 +100,19 @@ Exp   : Exp '+' Exp           { Plus $1 $3 }
 
 {
 
--- Parser errors
-parseError :: [Token] -> a
-parseError _ = error "INVALID: parse error"
+-- Wrapper function
+lexwrap :: (Token -> Alex a) -> Alex a
+lexwrap = (alexMonadScan' >>=)
 
 
--- Runs calc parser
-parse :: String -> Program
-parse s =
-  let (Program dclrs stmts) = calc $ lexer s in
-    Program (reverse dclrs) (reverse stmts)
+--
+parseError :: Token -> Alex a
+parseError (Token p t) =
+  alexError' p ("parse error")
 
+
+--
+parse :: FilePath -> String -> Either String Program
+parse = runAlex' calc
 
 }

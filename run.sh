@@ -6,7 +6,7 @@
 # command for invoking your compiler.
 
 # ~cs520/minilang/minic parse < "$1"
-stack exec parser $1
+stack exec minilang-exe $1
 
 # For example, if you produce a flex/bison binary file
 # "minic" in the src directory, you can invoke it using
