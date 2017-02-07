@@ -6,8 +6,33 @@ import Compiler.Language
 import Compiler.SymbolTable
 
 
+data TypeError
+  = TypeMismatch
+    { expected :: PrimType
+    , found :: PrimType
+    }
+  | InvalidType
+    { found :: PrimType }
+  | MissingDeclaration
+    { name :: String }
+  | DuplicateDeclaration
+    { name :: String }
+  deriving (Eq)
+
+
+instance Show TypeError where
+  show (TypeMismatch {expected = e,  found = f}) =
+    concat ["Expected Type = ", show e, ". Found Type = ", show f]
+  show (InvalidType {found = f}) =
+    "Invalid Type = " ++ show f
+  show (MissingDeclaration {name = n}) =
+    "Missing Declaration for " ++ show n
+  show (DuplicateDeclaration {name = n}) =
+    "Duplication Declaration for " ++ show n
+
+
 --
-typeCheck :: Program -> Maybe String
+typeCheck :: Program -> Maybe TypeError
 typeCheck (Program dclrs stmts) =
   case buildTable dclrs of
     Left dclrsErrorMsg -> Just dclrsErrorMsg
@@ -15,7 +40,7 @@ typeCheck (Program dclrs stmts) =
 
 
 --
-validateStatements :: [Stmt] -> SymbolTable -> Maybe String
+validateStatements :: [Stmt] -> SymbolTable -> Maybe TypeError
 validateStatements [] _ = Nothing
 validateStatements (stmt:stmts) table =
   case validateStatement stmt table of
@@ -24,23 +49,22 @@ validateStatements (stmt:stmts) table =
 
 
 --
-validateStatement :: Stmt -> SymbolTable -> Maybe String
+validateStatement :: Stmt -> SymbolTable -> Maybe TypeError
 validateStatement (Print e) table =
   case validateExpression e table of
     Left errorMsg -> Just errorMsg
     Right _ -> Nothing
 validateStatement (Read name) table =
   case get table name of
-    Nothing -> Just $ "Name " ++ name ++ " hasn't been declared"
+    Nothing -> Just $ MissingDeclaration name
     Just _ -> Nothing
 validateStatement (Assign name e) table =
   case get table name of
-    Nothing -> Just $ "Name " ++ name ++ " hasn't been declared"
+    Nothing -> Just $ MissingDeclaration name
     Just (_, nameType) -> case validateExpression e table of
       Left errorMsg -> Just errorMsg
       Right expType -> if nameType == expType then Nothing
-        else Just $ "Id " ++ name ++ " has type " ++ show nameType ++ " and expression "
-          ++ show e ++ " has type " ++ show expType
+        else Just $ TypeMismatch nameType expType
 validateStatement (While e stmts) table =
   case validateExpression e table of
     Left errorMsg -> Just errorMsg
@@ -48,9 +72,11 @@ validateStatement (While e stmts) table =
 validateStatement (If e stmts1 stmts2) table =
   case validateExpression e table of
     Left errorMsg -> Just errorMsg
-    Right _ -> case validateStatements stmts1 table of
-      Just errorMsg -> Just errorMsg
-      Nothing -> validateStatements stmts2 table
+    Right t -> case t of
+      TInt -> case validateStatements stmts1 table of
+        Just errorMsg -> Just errorMsg
+        Nothing -> validateStatements stmts2 table
+      _ -> Just $ TypeMismatch TInt t
 validateStatement (Exp e) table =
   case validateExpression e table of
     Left errorMsg -> Just errorMsg
@@ -58,12 +84,12 @@ validateStatement (Exp e) table =
 
 
 --
-validateExpression :: Exp -> SymbolTable -> Either String PrimType
+validateExpression :: Exp -> SymbolTable -> Either TypeError PrimType
 validateExpression (Negate e) table =
   case validateExpression e table of
     Left errorMsg -> Left errorMsg
     Right type' -> case type' of
-      TString -> Left "Unary negation on String type not permitted"
+      TString -> Left $ InvalidType TString
       _ -> Right type'
 validateExpression (Plus e1 e2) table = validateStandardBinaryOp e1 e2 table
 validateExpression (Minus e1 e2) table = validateStandardBinaryOp e1 e2 table
@@ -78,20 +104,19 @@ validateExpression (Times e1 e2) table =
       (TFloat, TInt) -> Right TFloat
       (TFloat, TFloat) -> Right TFloat
       (TString, TInt) -> Right TString
-      (_, _) -> Left $ "Binary operation on types " ++ show t1
-        ++ " and " ++ show t2 ++ " is not defined"
+      (_, _) -> Left $ TypeMismatch t1 t2
 validateExpression (Div e1 e2) table = validateStandardBinaryOp e1 e2 table
 validateExpression (Int _) _ = Right TInt
 validateExpression (Float _) _ = Right TFloat
 validateExpression (String _) _ = Right TString
 validateExpression (Id name) table =
   case get table name of
-    Nothing -> Left $ "Name " ++ name ++ " hasn't been declared"
+    Nothing -> Left $ MissingDeclaration name
     Just (_, t) -> Right t
 
 
 --
-validateStandardBinaryOp :: Exp -> Exp -> SymbolTable -> Either String PrimType
+validateStandardBinaryOp :: Exp -> Exp -> SymbolTable -> Either TypeError PrimType
 validateStandardBinaryOp e1 e2 table =
   case (validateExpression e1 table, validateExpression e2 table) of
     (Left errorMsg, _) -> Left errorMsg
@@ -102,12 +127,11 @@ validateStandardBinaryOp e1 e2 table =
       (TInt, TFloat) -> Right TFloat
       (TFloat, TInt) -> Right TFloat
       (TString, TString) -> Right TString
-      _ -> Left $ "Binary operation doesn't permit types "
-        ++ show t1 ++ " and " ++ show t2
+      _ -> Left $ TypeMismatch t1 t2
 
 
 --
-buildTable :: [Dclr] -> Either String SymbolTable
+buildTable :: [Dclr] -> Either TypeError SymbolTable
 buildTable dclrs = buildTable' dclrs empty where
   buildTable' [] table = Right table
   buildTable' (dclr:dclrs') table =
@@ -117,5 +141,8 @@ buildTable dclrs = buildTable' dclrs empty where
 
 
 --
-insert' :: SymbolTable -> Dclr -> Either String SymbolTable
-insert' table (Dclr name primType) = insert table (name, primType)
+insert' :: SymbolTable -> Dclr -> Either TypeError SymbolTable
+insert' table (Dclr name primType) =
+  case insert table (name, primType) of
+    Left _ -> Left $ DuplicateDeclaration name
+    Right table' -> Right table'
