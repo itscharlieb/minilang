@@ -28,7 +28,6 @@ data Stmt
   | Assign String Exp
   | While Exp [Stmt]
   | If Exp [Stmt] [Stmt]
-  | Exp Exp
   deriving (Show, Eq)
 
 
@@ -99,7 +98,6 @@ instance Pretty Stmt where
     , prettyList stmts2 ('\t':i)
     , i ++ "endif"
     ]
-  prettyIndented (Exp e) i = i ++ pretty e
 
 
 --

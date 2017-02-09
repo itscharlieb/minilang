@@ -61,7 +61,6 @@ generateStmt (TIf e stmts []) =
 generateStmt (TIf e stmts1 stmts2) =
   "if (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts1
     ++ "} else if {\n" ++ generateStmts stmts2 ++ "}"
-generateStmt (TExp e) = generateExp e
 
 
 --

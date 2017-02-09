@@ -24,7 +24,6 @@ data TStmt
   | TAssign String TExp
   | TWhile TExp [TStmt]
   | TIf TExp [TStmt] [TStmt]
-  | TExp TExp
   deriving (Show, Eq)
 
 
@@ -109,9 +108,6 @@ validateStatement (If e stmts1 stmts2) table = do
   stmts1' <- validateStatements stmts1 table
   stmts2' <- validateStatements stmts2 table
   Right $ TIf e' stmts1' stmts2'
-validateStatement (Exp e) table = do
-  e' <- validateExpression e table
-  Right $ TExp e'
 
 
 --
