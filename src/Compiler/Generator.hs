@@ -2,66 +2,80 @@ module Compiler.Generator where
 
 
 import Compiler.Language
+import Compiler.TypeChecker
 
 
 --
-generate :: Program -> String
-generate (Program dclrs stmts) =
-  "#include <stdio.h>\n\n"
-    ++ "int main() {\n"
-    ++ generateDclrs dclrs
-    ++ generateStmts stmts
-    ++ "}"
+generate :: TProgram -> String
+generate (TProgram dclrs stmts) = unlines
+  [ "#include <stdio.h>"
+  , stringRepeat
+  , "int main() {"
+  , generateDclrs dclrs
+  , generateStmts stmts
+  , "}"
+  ]
+
+
+stringRepeat :: String
+stringRepeat = unlines
+  [ "char* string_repeat(char* s, int count) {"
+    , "char* ret = malloc(strlen(s) * count);"
+    , "strcpy(ret, s);"
+    , "while (--count > 0) {"
+      , "strcat(ret, s);"
+    , "}"
+  , "}"
+  ]
 
 
 --
-generateDclrs :: [Dclr] -> String
+generateDclrs :: [TDclr] -> String
 generateDclrs dclrs = unlines $ map generateDclr dclrs
 
 
 --
-generateDclr :: Dclr -> String
-generateDclr (Dclr name TInt) = "int " ++ name ++ ";"
-generateDclr (Dclr name TFloat) = "float " ++ name ++ ";"
-generateDclr (Dclr name TString) = "char* " ++ name ++ ";"
+generateDclr :: TDclr -> String
+generateDclr (TDclr name TInt) = "int " ++ name ++ ";"
+generateDclr (TDclr name TFloat) = "float " ++ name ++ ";"
+generateDclr (TDclr name TString) = "char* " ++ name ++ ";"
 
 
 --
-generateStmts :: [Stmt] -> String
+generateStmts :: [TStmt] -> String
 generateStmts stmts = unlines $ map generateStmt stmts
 
 
 --
-generateStmt :: Stmt -> String
-generateStmt (Print e) =
+generateStmt :: TStmt -> String
+generateStmt (TPrint e) =
   "printf(\"%s\", "
     ++ generateExp e
     ++ ");"
--- TODO
-generateStmt (Read name) = "scanf();"
-generateStmt (Assign name e) = name ++ " = " ++ generateExp e ++ ";"
-generateStmt (While e stmts) =
+generateStmt (TRead _) = "scanf();"
+generateStmt (TAssign name e) = name ++ " = " ++ generateExp e ++ ";"
+generateStmt (TWhile e stmts) =
   "while (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts ++ "}"
-generateStmt (If e stmts []) =
+generateStmt (TIf e stmts []) =
   "if (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts ++ "}"
-generateStmt (If e stmts1 stmts2) =
+generateStmt (TIf e stmts1 stmts2) =
   "if (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts1
     ++ "} else if {\n" ++ generateStmts stmts2 ++ "}"
-generateStmt (Exp e) = generateExp e
+generateStmt (TExp e) = generateExp e
 
 
 --
-generateExp :: Exp -> String
-generateExp (Negate e) = "- " ++ generateExp e
-generateExp (Plus e1 e2) =
+generateExp :: TExp -> String
+generateExp (TNegate e, _) = "- " ++ generateExp e
+generateExp (TPlus e1 e2, _) =
   generateExp e1 ++ " + " ++ generateExp e2
-generateExp (Minus e1 e2) =
+generateExp (TMinus e1 e2, _) =
   generateExp e1 ++ " - " ++ generateExp e2
-generateExp (Times e1 e2) =
+generateExp (TTimes e1 e2, _) =
   "(" ++ generateExp e1 ++ " * " ++ generateExp e2 ++ ")"
-generateExp (Div e1 e2) =
+generateExp (TDiv e1 e2, _) =
   "(" ++ generateExp e1 ++ " / " ++ generateExp e2 ++ ")"
-generateExp (Int i) = show i
-generateExp (Float f) = show f
-generateExp (String s) = s
-generateExp (Id name) = name
+generateExp (TIntId i, _) = show i
+generateExp (TFloatId f, _) = show f
+generateExp (TStringId s, _) = s
+generateExp (TId name, _) = name

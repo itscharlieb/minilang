@@ -1,9 +1,46 @@
-module Compiler.TypeChecker
-  ( typeCheck ) where
+module Compiler.TypeChecker where
 
 
 import Compiler.Language
 import Compiler.SymbolTable
+
+
+-- Simple solution to having a typed AST
+-- Duplicate entire AST with typed expressions
+data TProgram
+  = TProgram [TDclr] [TStmt]
+  deriving (Show, Eq)
+
+
+data TDclr
+  = TDclr String PrimType
+  deriving (Show, Eq)
+
+
+data TStmt
+  = TPrint TExp
+  | TRead String
+  | TAssign String TExp
+  | TWhile TExp [TStmt]
+  | TIf TExp [TStmt] [TStmt]
+  | TExp TExp
+  deriving (Show, Eq)
+
+
+type TExp = (TExp', PrimType)
+
+
+data TExp'
+  = TNegate TExp
+  | TPlus TExp TExp
+  | TMinus TExp TExp
+  | TTimes TExp TExp
+  | TDiv TExp TExp
+  | TIntId Int
+  | TFloatId Float
+  | TStringId String
+  | TId String
+  deriving (Show, Eq)
 
 
 data TypeError
@@ -14,120 +51,111 @@ data TypeError
   | InvalidType
     { found :: PrimType }
   | MissingDeclaration
-    { name :: String }
+    { declaration :: String }
   | DuplicateDeclaration
-    { name :: String }
+    { declaration :: String }
   deriving (Eq)
 
 
 instance Show TypeError where
-  show (TypeMismatch {expected = e,  found = f}) =
+  show TypeMismatch {expected = e,  found = f} =
     concat ["Expected Type = ", show e, ". Found Type = ", show f]
-  show (InvalidType {found = f}) =
+  show InvalidType {found = f} =
     "Invalid Type = " ++ show f
-  show (MissingDeclaration {name = n}) =
-    "Missing Declaration for " ++ show n
-  show (DuplicateDeclaration {name = n}) =
-    "Duplication Declaration for " ++ show n
+  show MissingDeclaration {declaration = d} =
+    "Missing Declaration for " ++ show d
+  show DuplicateDeclaration {declaration = d} =
+    "Duplication Declaration for " ++ show d
+
+
+-- Output SymbolTable for assignment requirements
+typeCheck :: Program -> Either TypeError TProgram
+typeCheck (Program dclrs stmts) = do
+  table <- buildTable dclrs
+  tstmts <- validateStatements stmts table
+  let tdclrs = map (\(Dclr name type') -> TDclr name type') dclrs in
+    Right $ TProgram tdclrs tstmts
 
 
 --
-typeCheck :: Program -> Maybe TypeError
-typeCheck (Program dclrs stmts) =
-  case buildTable dclrs of
-    Left dclrsErrorMsg -> Just dclrsErrorMsg
-    Right table -> validateStatements stmts table
+validateStatements :: [Stmt] -> SymbolTable -> Either TypeError [TStmt]
+validateStatements stmts table = mapM (`validateStatement` table) stmts
 
 
 --
-validateStatements :: [Stmt] -> SymbolTable -> Maybe TypeError
-validateStatements [] _ = Nothing
-validateStatements (stmt:stmts) table =
-  case validateStatement stmt table of
-    Just errorMsg -> Just errorMsg
-    Nothing -> validateStatements stmts table
-
-
---
-validateStatement :: Stmt -> SymbolTable -> Maybe TypeError
-validateStatement (Print e) table =
-  case validateExpression e table of
-    Left errorMsg -> Just errorMsg
-    Right _ -> Nothing
+validateStatement :: Stmt -> SymbolTable -> Either TypeError TStmt
+validateStatement (Print e) table = do
+  e' <- validateExpression e table
+  return $ TPrint e'
 validateStatement (Read name) table =
   case get table name of
-    Nothing -> Just $ MissingDeclaration name
-    Just _ -> Nothing
+    Nothing -> Left $ MissingDeclaration name
+    Just _ -> Right $ TRead name
 validateStatement (Assign name e) table =
   case get table name of
-    Nothing -> Just $ MissingDeclaration name
-    Just (_, nameType) -> case validateExpression e table of
-      Left errorMsg -> Just errorMsg
-      Right expType -> if nameType == expType then Nothing
-        else Just $ TypeMismatch nameType expType
-validateStatement (While e stmts) table =
-  case validateExpression e table of
-    Left errorMsg -> Just errorMsg
-    Right _ -> validateStatements stmts table
-validateStatement (If e stmts1 stmts2) table =
-  case validateExpression e table of
-    Left errorMsg -> Just errorMsg
-    Right t -> case t of
-      TInt -> case validateStatements stmts1 table of
-        Just errorMsg -> Just errorMsg
-        Nothing -> validateStatements stmts2 table
-      _ -> Just $ TypeMismatch TInt t
-validateStatement (Exp e) table =
-  case validateExpression e table of
-    Left errorMsg -> Just errorMsg
-    Right _ -> Nothing
+    Nothing -> Left $ MissingDeclaration name
+    Just (_, nameType) -> do
+      e' <- validateExpression e table
+      if nameType == snd e'
+        then Right $ TAssign name e'
+        else Left $ TypeMismatch nameType (snd e')
+validateStatement (While e stmts) table = do
+  e' <- validateExpression e table
+  stmts' <- validateStatements stmts table
+  Right $ TWhile e' stmts'
+validateStatement (If e stmts1 stmts2) table = do
+  e' <- validateExpression e table
+  stmts1' <- validateStatements stmts1 table
+  stmts2' <- validateStatements stmts2 table
+  Right $ TIf e' stmts1' stmts2'
+validateStatement (Exp e) table = do
+  e' <- validateExpression e table
+  Right $ TExp e'
 
 
 --
-validateExpression :: Exp -> SymbolTable -> Either TypeError PrimType
-validateExpression (Negate e) table =
-  case validateExpression e table of
-    Left errorMsg -> Left errorMsg
-    Right type' -> case type' of
-      TString -> Left $ InvalidType TString
-      _ -> Right type'
-validateExpression (Plus e1 e2) table = validateStandardBinaryOp e1 e2 table
-validateExpression (Minus e1 e2) table = validateStandardBinaryOp e1 e2 table
-validateExpression (Times e1 e2) table =
-  case (validateExpression e1 table, validateExpression e2 table) of
-    (Left errorMsg, _) -> Left errorMsg
-    (_, Left errorMsg) -> Left errorMsg
-    (Right t1, Right t2) -> case (t1, t2) of
-      (TInt, TInt) -> Right TInt
-      (TInt, TFloat) -> Right TFloat
-      (TInt, TString) -> Right TString
-      (TFloat, TInt) -> Right TFloat
-      (TFloat, TFloat) -> Right TFloat
-      (TString, TInt) -> Right TString
-      (_, _) -> Left $ TypeMismatch t1 t2
-validateExpression (Div e1 e2) table = validateStandardBinaryOp e1 e2 table
-validateExpression (Int _) _ = Right TInt
-validateExpression (Float _) _ = Right TFloat
-validateExpression (String _) _ = Right TString
+validateExpression :: Exp -> SymbolTable -> Either TypeError TExp
+validateExpression (Negate e) table = do
+  e' <- validateExpression e table
+  case snd e' of
+    TString -> Left $ InvalidType TString
+    _ -> return e'
+validateExpression (Plus e1 e2) table = validateStandardBinaryOp e1 e2 TPlus table
+validateExpression (Minus e1 e2) table = validateStandardBinaryOp e1 e2 TMinus table
+validateExpression (Times e1 e2) table = do
+  e1' <- validateExpression e1 table
+  e2' <- validateExpression e2 table
+  let e = TTimes e1' e2' in
+    case (snd e1', snd e2') of
+      (TInt, TInt) -> Right (e, TInt)
+      (TInt, TFloat) -> Right (e, TFloat)
+      (TInt, TString) -> Right (e, TString)
+      (TFloat, TInt) -> Right (e, TFloat)
+      (TFloat, TFloat) -> Right (e, TFloat)
+      (TString, TInt) -> Right (e, TString)
+      (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
+validateExpression (Div e1 e2) table = validateStandardBinaryOp e1 e2 TDiv table
+validateExpression (Int i) _ = Right (TIntId i, TInt)
+validateExpression (Float f) _ = Right (TFloatId f, TFloat)
+validateExpression (String s) _ = Right (TStringId s, TString)
 validateExpression (Id name) table =
   case get table name of
     Nothing -> Left $ MissingDeclaration name
-    Just (_, t) -> Right t
+    Just (_, type') -> Right (TId name, type')
 
 
 --
-validateStandardBinaryOp :: Exp -> Exp -> SymbolTable -> Either TypeError PrimType
-validateStandardBinaryOp e1 e2 table =
-  case (validateExpression e1 table, validateExpression e2 table) of
-    (Left errorMsg, _) -> Left errorMsg
-    (_, Left errorMsg) -> Left errorMsg
-    (Right t1, Right t2) -> case (t1, t2) of
-      (TInt, TInt) -> Right TInt
-      (TFloat, TFloat) -> Right TFloat
-      (TInt, TFloat) -> Right TFloat
-      (TFloat, TInt) -> Right TFloat
-      (TString, TString) -> Right TString
-      _ -> Left $ TypeMismatch t1 t2
+validateStandardBinaryOp :: Exp -> Exp -> (TExp -> TExp -> TExp') -> SymbolTable -> Either TypeError TExp
+validateStandardBinaryOp e1 e2 f table = do
+  e1' <- validateExpression e1 table
+  e2' <- validateExpression e2 table
+  case (snd e1', snd e2') of
+    (TInt, TInt) -> Right (f e1' e2', TInt)
+    (TFloat, TInt) -> Right (f e1' e2', TFloat)
+    (TInt, TFloat) -> Right (f e1' e2', TFloat)
+    (TFloat, TFloat) -> Right (f e1' e2', TFloat)
+    (TString, TString) -> Right (f e1' e2', TString)
+    (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
 
 
 --

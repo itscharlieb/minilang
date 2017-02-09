@@ -32,9 +32,13 @@ compile fp = do
       putStrLn errorMsg
       exitFailure
     Right program -> do
-      let prettyFile = replaceExtension fp "pretty.min" in
-        writeFile prettyFile (pretty program)
-      let symbolFile = replaceExtension fp "symbol.txt" in
-        writeFile symbolFile $ show $ typeCheck program
-      let cFile = replaceExtension fp ".c" in
-        writeFile cFile (generate program)
+      writeFile prettyFile (pretty program)
+      case typeCheck program of
+        Left typeError ->
+          writeFile symbolFile $ show typeError
+        Right typedProgram ->
+          writeFile cFile (generate typedProgram)
+      where
+        prettyFile = replaceExtension fp "pretty.min"
+        symbolFile = replaceExtension fp "symbol.txt"
+        cFile = replaceExtension fp ".c"
