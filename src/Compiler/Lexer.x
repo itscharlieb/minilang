@@ -18,7 +18,7 @@ import Control.Monad ( liftM )
 
 $digit = [0-9] -- digits
 $alpha = [a-zA-Z] -- alphabetic characters
-$symbol = [\~ \# \$ \^ \& \* \- \+ \/ \` \> \< \= \_ \| \' \; \: \{ \} \[ \] \( \)]
+$symbol = [\~ \# \$ \^ \& \* \- \+ \/ \` \> \< \= \_ \| \' \; \: \{ \} \[ \] \( \) \%]
 $escaped = [\" a b f n r t v \\]
 $graphic = [$digit $alpha $white $symbol]
 
