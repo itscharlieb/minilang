@@ -47,4 +47,6 @@ test-suite spec
     base >=4.8 && <4.10,
     hspec >=2.1 && <2.3,
     QuickCheck >=2.8 && <2.9,
+    filepath >= 1,
+    directory >= 1,
     minilang
