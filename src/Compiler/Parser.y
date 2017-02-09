@@ -108,6 +108,14 @@ parseError (Token p t) =
 
 --
 parse :: FilePath -> String -> Either String Program
-parse = runAlex' calc
+parse fp text = fmap reverseProgram $ (runAlex' calc) fp text
+  where
+    reverseProgram (Program dclrs stmts) =
+      Program (reverse dclrs) (reverseStmts stmts)
+    reverseStmts stmts = reverse $ map reverseStmt stmts
+    reverseStmt (If e stmts1 stmts2) =
+      If e (reverseStmts stmts1) (reverseStmts stmts2)
+    reverseStmt (While e stmts) = While e (reverseStmts stmts)
+    reverseStmt stmt = stmt
 
 }
