@@ -59,7 +59,8 @@ tokens :-
 
   \"($graphic|(\\$escaped))*\"    { lex TokenStringVal }
 
-  $alpha [$alpha $digit \_ \’]*   { lex TokenId }
+  [$alpha \_]
+    [$alpha $digit \_ \’]*        { lex TokenId }
 
 
 {
