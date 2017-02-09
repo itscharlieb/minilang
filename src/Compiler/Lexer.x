@@ -55,7 +55,7 @@ tokens :-
 
   0|[1-9][0-9]*                   { lex (TokenIntVal . read) }
 
-  (0|([1-9][0-9]*))\.[0-9]        { lex (TokenFloatVal . read) }
+  (0|([1-9][0-9]*))\.[0-9]*       { lex (TokenFloatVal . read) }
 
   \"($graphic|(\\$escaped))*\"    { lex TokenStringVal }
 
