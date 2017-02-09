@@ -1,0 +1,2 @@
+// Missing fractional part in float
+print 1.;

@@ -1,0 +1,5 @@
+// valid if
+var x : int;
+if x then
+	x = 0;
+endif

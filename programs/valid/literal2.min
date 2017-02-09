@@ -1,0 +1,5 @@
+// valid literal string
+// String with all possible characters (except !@,.?)
+var z_1 : string;
+
+z_1 = ":~#$%^&*-+/`<>=_|';:{}[]()\"\a\b \f\n\r\t\v\\ ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 0123456789"; 

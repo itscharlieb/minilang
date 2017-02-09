@@ -1,0 +1,4 @@
+// valid if-else, empty body
+if 1 then
+else
+endif

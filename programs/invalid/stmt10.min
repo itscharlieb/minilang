@@ -1,0 +1,4 @@
+// invalid: read with expression
+var x : int;
+
+read x * x;

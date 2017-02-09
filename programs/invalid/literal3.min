@@ -1,0 +1,2 @@
+// Missing integral part in float
+print .25;

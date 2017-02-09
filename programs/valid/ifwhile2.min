@@ -1,0 +1,6 @@
+// valid while-if, nested
+while 1 do
+	if 1 then
+		x = 1;
+	endif
+done

@@ -1,0 +1,3 @@
+// Missing var keyword
+// 17, syntax error
+x : int;

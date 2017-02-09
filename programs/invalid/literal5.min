@@ -1,0 +1,2 @@
+// no leading zero(s), except 0
+print 00;

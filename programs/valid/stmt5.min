@@ -1,0 +1,4 @@
+// valid assignment
+var x : int;
+var y : int;
+x = y;

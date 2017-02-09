@@ -1,0 +1,3 @@
+// invalid unary operator
+// 17, syntax error
+print +4;

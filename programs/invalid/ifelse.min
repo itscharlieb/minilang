@@ -1,9 +1,0 @@
-if 3 + 4 then
-  hello;
-  world;
-else 3 + 4
-  this;
-  doesnt;
-  make;
-  sense;
-endif

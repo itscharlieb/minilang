@@ -1,0 +1,5 @@
+// valid while, expr condition
+var x : int;
+while 1 do
+	x = 1;
+done

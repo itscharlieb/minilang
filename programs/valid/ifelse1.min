@@ -1,0 +1,7 @@
+// valid if-else
+var x : int;
+if 1 then
+	x = 0;
+else
+	x = 1;
+endif

@@ -1,0 +1,4 @@
+// Declaration after statements
+// 17, syntax error
+print 3;
+var x: int;

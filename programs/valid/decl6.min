@@ -1,0 +1,2 @@
+// valid identifier, numbers included
+var ident000 : int;
