@@ -1,6 +1,7 @@
 module Compiler.TypeChecker where
 
 
+import Control.Monad(foldM)
 import Compiler.Language
 import Compiler.SymbolTable
 
@@ -160,12 +161,7 @@ validateStandardBinaryOp e1 e2 f table = do
 
 --
 buildTable :: [Dclr] -> Either TypeError SymbolTable
-buildTable dclrs = buildTable' dclrs empty where
-  buildTable' [] table = Right table
-  buildTable' (dclr:dclrs') table =
-    case insert' table dclr of
-      Left errorMsg -> Left errorMsg
-      Right table' -> buildTable' dclrs' table'
+buildTable = foldM insert' empty
 
 
 --
