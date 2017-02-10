@@ -47,8 +47,8 @@ main = do
 
   hspec $ describe "Compiler" $ do
     forM_ validSyntactic $ \(file, text) ->
-      it ("correctly lexes, parses, types, and generates program : " ++ file) $
-        compile file text `shouldSatisfy` passes
+      it ("correctly parses : " ++ file) $
+        Compiler.parse file text `shouldSatisfy` passes
 
     forM_ invalidSyntactic $ \(file, text) ->
       it ("fails to parse : " ++ file) $
