@@ -17,12 +17,16 @@ compile file text =
     Left parseError -> Left $ show parseError
 
 
-validSourcesDir :: FilePath
-validSourcesDir = "programs/valid"
+validSyntacticSourcesDir :: FilePath
+validSyntacticSourcesDir = "programs/valid"
 
 
-invalidSourcesDir :: FilePath
-invalidSourcesDir = "programs/invalid"
+invalidSyntacticSourcesDir :: FilePath
+invalidSyntacticSourcesDir = "programs/invalid"
+
+
+invalidSemanticSourcesDir :: FilePath
+invalidSemanticSourcesDir = "programs/invalid_semantically"
 
 
 loadPrograms :: FilePath -> IO [(String, String)]
@@ -37,17 +41,22 @@ loadPrograms directory = do
 -- not needed for automatic spec discovery.
 main :: IO ()
 main = do
-  validSources <- loadPrograms "programs/valid"
-  invalidSources <- loadPrograms "programs/invalid"
+  validSyntactic <- loadPrograms validSyntacticSourcesDir
+  invalidSyntactic <- loadPrograms invalidSyntacticSourcesDir
+  invalidSemantic <- loadPrograms invalidSemanticSourcesDir
 
   hspec $ describe "Compiler" $ do
-    forM_ validSources $ \(file, text) ->
+    forM_ validSyntactic $ \(file, text) ->
       it ("correctly lexes, parses, types, and generates program : " ++ file) $
         compile file text `shouldSatisfy` passes
 
-    forM_ invalidSources $ \(file, text) ->
-      it ("fails to generate : " ++ file) $
+    forM_ invalidSyntactic $ \(file, text) ->
+      it ("fails to parse : " ++ file) $
         compile file text `shouldSatisfy` not . passes
+
+    forM_ invalidSemantic $ \(file, text) ->
+      it ("fails to type check : " ++ file) $
+        compile file text  `shouldSatisfy` not . passes
 
   where
     passes (Left _) = False
