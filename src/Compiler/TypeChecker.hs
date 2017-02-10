@@ -119,7 +119,17 @@ validateExpression (Negate e) table = do
   case snd e' of
     TString -> Left $ InvalidType TString
     _ -> return e'
-validateExpression (Plus e1 e2) table = validateStandardBinaryOp e1 e2 TPlus table
+validateExpression (Plus e1 e2) table = do
+  e1' <- validateExpression e1 table
+  e2' <- validateExpression e2 table
+  let e = TTimes e1' e2' in
+    case (snd e1', snd e2') of
+      (TInt, TInt) -> Right (e, TInt)
+      (TInt, TFloat) -> Right (e, TFloat)
+      (TFloat, TInt) -> Right (e, TFloat)
+      (TFloat, TFloat) -> Right (e, TFloat)
+      (TString, TString) -> Right (e, TString)
+      (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
 validateExpression (Minus e1 e2) table = validateStandardBinaryOp e1 e2 TMinus table
 validateExpression (Times e1 e2) table = do
   e1' <- validateExpression e1 table
@@ -153,7 +163,6 @@ validateStandardBinaryOp e1 e2 f table = do
     (TFloat, TInt) -> Right (f e1' e2', TFloat)
     (TInt, TFloat) -> Right (f e1' e2', TFloat)
     (TFloat, TFloat) -> Right (f e1' e2', TFloat)
-    (TString, TString) -> Right (f e1' e2', TString)
     (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
 
 
