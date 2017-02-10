@@ -94,11 +94,14 @@ validateStatement (Read name) table =
 validateStatement (Assign name e) table =
   case get table name of
     Nothing -> Left $ MissingDeclaration name
-    Just (_, nameType) -> do
+    Just (_, idType) -> do
       e' <- validateExpression e table
-      if nameType == snd e'
-        then Right $ TAssign name e'
-        else Left $ TypeMismatch nameType (snd e')
+      case (idType, snd e') of
+        (TInt, TInt) -> Right $ TAssign name e'
+        (TFloat, TInt) -> Right $ TAssign name e'
+        (TFloat, TFloat) -> Right $ TAssign name e'
+        (TString, TString) -> Right $ TAssign name e'
+        (expectedType, foundType) -> Left $ TypeMismatch expectedType foundType
 validateStatement (While e stmts) table = do
   e' <- validateExpression e table
   validateType e' TInt
