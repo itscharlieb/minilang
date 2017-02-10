@@ -17,8 +17,8 @@ compile file text =
     Left parseError -> Left $ show parseError
 
 
-validSyntacticSourcesDir :: FilePath
-validSyntacticSourcesDir = "programs/valid"
+validSourcesDir :: FilePath
+validSourcesDir = "programs/valid"
 
 
 invalidSyntacticSourcesDir :: FilePath
@@ -41,18 +41,18 @@ loadPrograms directory = do
 -- not needed for automatic spec discovery.
 main :: IO ()
 main = do
-  validSyntactic <- loadPrograms validSyntacticSourcesDir
+  valid <- loadPrograms validSourcesDir
   invalidSyntactic <- loadPrograms invalidSyntacticSourcesDir
   invalidSemantic <- loadPrograms invalidSemanticSourcesDir
 
   hspec $ describe "Compiler" $ do
-    forM_ validSyntactic $ \(file, text) ->
-      it ("correctly parses : " ++ file) $
-        Compiler.parse file text `shouldSatisfy` passes
+    forM_ valid $ \(file, text) ->
+      it ("correctly compiles : " ++ file) $
+        compile file text `shouldSatisfy` passes
 
     forM_ invalidSyntactic $ \(file, text) ->
       it ("fails to parse : " ++ file) $
-        compile file text `shouldSatisfy` not . passes
+        Compiler.parse file text `shouldSatisfy` not . passes
 
     forM_ invalidSemantic $ \(file, text) ->
       it ("fails to type check : " ++ file) $
