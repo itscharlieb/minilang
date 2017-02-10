@@ -101,10 +101,12 @@ validateStatement (Assign name e) table =
         else Left $ TypeMismatch nameType (snd e')
 validateStatement (While e stmts) table = do
   e' <- validateExpression e table
+  validateType e' TInt
   stmts' <- validateStatements stmts table
   Right $ TWhile e' stmts'
 validateStatement (If e stmts1 stmts2) table = do
   e' <- validateExpression e table
+  validateType e' TInt
   stmts1' <- validateStatements stmts1 table
   stmts2' <- validateStatements stmts2 table
   Right $ TIf e' stmts1' stmts2'
@@ -153,6 +155,12 @@ validateStandardBinaryOp e1 e2 f table = do
     (TFloat, TFloat) -> Right (f e1' e2', TFloat)
     (TString, TString) -> Right (f e1' e2', TString)
     (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
+
+
+--
+validateType :: TExp -> PrimType -> Either TypeError TExp
+validateType (e, expected) found =
+  if expected == found then Right (e, expected) else Left $ TypeMismatch expected found
 
 
 --
