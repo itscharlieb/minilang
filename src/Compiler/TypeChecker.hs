@@ -20,7 +20,12 @@ data TDclr
 
 data TStmt
   = TPrint TExp
-  | TRead String
+   --TODO
+   --Hack to not make new ID type. Should have LType ID and RType ID (I think).
+   --Generator needs to know type of variable name read into.
+   --TExp will only ever be TId
+   --Will need to have silly match for non TId types in genrator.
+  | TRead TExp
   | TAssign String TExp
   | TWhile TExp [TStmt]
   | TIf TExp [TStmt] [TStmt]
@@ -36,9 +41,9 @@ data TExp'
   | TMinus TExp TExp
   | TTimes TExp TExp
   | TDiv TExp TExp
-  | TIntId Int
-  | TFloatId Float
-  | TStringId String
+  | TIntVal Int
+  | TFloatVal Float
+  | TStringVal String
   | TId String
   deriving (Show, Eq)
 
@@ -90,7 +95,7 @@ validateStatement (Print e) table = do
 validateStatement (Read name) table =
   case get table name of
     Nothing -> Left $ MissingDeclaration name
-    Just _ -> Right $ TRead name
+    Just (_, type') -> Right $ TRead (TId name, type')
 validateStatement (Assign name e) table =
   case get table name of
     Nothing -> Left $ MissingDeclaration name
@@ -147,9 +152,9 @@ validateExpression (Times e1 e2) table = do
       (TString, TInt) -> Right (e, TString)
       (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
 validateExpression (Div e1 e2) table = validateStandardBinaryOp e1 e2 TDiv table
-validateExpression (Int i) _ = Right (TIntId i, TInt)
-validateExpression (Float f) _ = Right (TFloatId f, TFloat)
-validateExpression (String s) _ = Right (TStringId s, TString)
+validateExpression (Int i) _ = Right (TIntVal i, TInt)
+validateExpression (Float f) _ = Right (TFloatVal f, TFloat)
+validateExpression (String s) _ = Right (TStringVal s, TString)
 validateExpression (Id name) table =
   case get table name of
     Nothing -> Left $ MissingDeclaration name

@@ -38,11 +38,15 @@ generateStmts stmts = unlines $ map generateStmt stmts
 
 --
 generateStmt :: TStmt -> String
-generateStmt (TPrint e) =
-  "printf(\"%s\", "
-    ++ generateExp e
-    ++ ");"
-generateStmt (TRead _) = "scanf();"
+generateStmt (TPrint e@(_, TInt)) = "printf(\"%d\", " ++ generateExp e ++ ");"
+generateStmt (TPrint e@(_, TFloat)) = "printf(\"%f\", " ++ generateExp e ++ ");"
+generateStmt (TPrint e@(_, TString)) = "printf(\"%s\", " ++ generateExp e ++ ");"
+
+-- TODO fix invalide missing case statement (see note in type checker)
+generateStmt (TRead (TId name, TInt)) = "scanf(\"%d\", &" ++ name ++ ");"
+generateStmt (TRead (TId name, TFloat)) = "scanf(\"%f\", &" ++ name ++ ");"
+generateStmt (TRead (TId name, TString)) = "scanf(\"%s\", " ++ name ++ ");"
+
 generateStmt (TAssign name e) = name ++ " = " ++ generateExp e ++ ";"
 generateStmt (TWhile e stmts) =
   "while (" ++ generateExp e ++ ") {\n" ++ generateStmts stmts ++ "}"
