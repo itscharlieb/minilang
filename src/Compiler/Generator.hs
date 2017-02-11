@@ -61,19 +61,19 @@ generateStmt (TIf e stmts1 stmts2) =
 generateExp :: TExp -> String
 generateExp (TNegate e, _) = "-" ++ generateExp e
 generateExp (TPlus e1 e2, TString) = generateStrConcat e1 e2
-generateExp (TPlus e1 e2, _) =
-  generateExp e1 ++ " + " ++ generateExp e2
-generateExp (TMinus e1 e2, _) =
-  generateExp e1 ++ " - " ++ generateExp e2
+generateExp (TPlus e1 e2, _) = generateBinary e1 e2 "+"
+generateExp (TMinus e1 e2, _) = generateBinary e1 e2 "-"
 generateExp (TTimes e1 e2, TString) = generateStrRepeat e1 e2
-generateExp (TTimes e1 e2, _) =
-  "(" ++ generateExp e1 ++ " * " ++ generateExp e2 ++ ")"
-generateExp (TDiv e1 e2, _) =
-  "(" ++ generateExp e1 ++ " / " ++ generateExp e2 ++ ")"
+generateExp (TTimes e1 e2, _) = generateBinary e1 e2 "*"
+generateExp (TDiv e1 e2, _) = generateBinary e1 e2 "/"
 generateExp (TIntVal i, _) = show i
 generateExp (TFloatVal f, _) = show f
 generateExp (TStringVal s, _) = s
 generateExp (TId name, _) = name
+
+
+generateBinary :: TExp -> TExp -> String -> String
+generateBinary e1 e2 op = concat ["(", generateExp e1, op, generateExp e2, ")"]
 
 
 generateStrConcat :: TExp -> TExp -> String
