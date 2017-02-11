@@ -130,7 +130,7 @@ validateExpression (Negate e) table = do
 validateExpression (Plus e1 e2) table = do
   e1' <- validateExpression e1 table
   e2' <- validateExpression e2 table
-  let e = TTimes e1' e2' in
+  let e = TPlus e1' e2' in
     case (snd e1', snd e2') of
       (TInt, TInt) -> Right (e, TInt)
       (TInt, TFloat) -> Right (e, TFloat)
