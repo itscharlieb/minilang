@@ -9,25 +9,15 @@ import Compiler.TypeChecker
 generate :: TProgram -> String
 generate (TProgram dclrs stmts) = unlines
   [ "#include <stdio.h>"
+  , "#include <stdlib.h>"
+  , "#include <string.h>"
   , stringRepeat
+  , stringConcat
   , "int main() {"
   , generateDclrs dclrs
   , generateStmts stmts
   , "}"
   ]
-
-
-stringRepeat :: String
-stringRepeat = unlines
-  [ "char* string_repeat(char* s, int count) {"
-    , "char* ret = malloc(strlen(s) * count);"
-    , "strcpy(ret, s);"
-    , "while (--count > 0) {"
-      , "strcat(ret, s);"
-    , "}"
-  , "}"
-  ]
-
 
 --
 generateDclrs :: [TDclr] -> String
@@ -65,16 +55,51 @@ generateStmt (TIf e stmts1 stmts2) =
 
 --
 generateExp :: TExp -> String
-generateExp (TNegate e, _) = "- " ++ generateExp e
+generateExp (TNegate e, _) = "-" ++ generateExp e
+generateExp (TPlus e1 e2, TString) = generateStrConcat e1 e2
 generateExp (TPlus e1 e2, _) =
   generateExp e1 ++ " + " ++ generateExp e2
 generateExp (TMinus e1 e2, _) =
   generateExp e1 ++ " - " ++ generateExp e2
+generateExp (TTimes e1 e2, TString) = generateStrRepeat e1 e2
 generateExp (TTimes e1 e2, _) =
   "(" ++ generateExp e1 ++ " * " ++ generateExp e2 ++ ")"
 generateExp (TDiv e1 e2, _) =
   "(" ++ generateExp e1 ++ " / " ++ generateExp e2 ++ ")"
-generateExp (TIntId i, _) = show i
-generateExp (TFloatId f, _) = show f
-generateExp (TStringId s, _) = s
+generateExp (TIntVal i, _) = show i
+generateExp (TFloatVal f, _) = show f
+generateExp (TStringVal s, _) = s
 generateExp (TId name, _) = name
+
+
+generateStrConcat :: TExp -> TExp -> String
+generateStrConcat e1 e2 =
+  "string_concat(" ++ generateExp e1 ++ ", " ++ generateExp e2 ++ ")"
+
+
+generateStrRepeat :: TExp -> TExp -> String
+generateStrRepeat e1 e2 =
+  "string_repeat(" ++ generateExp e1 ++ ", " ++ generateExp e2 ++ ")"
+
+
+stringConcat :: String
+stringConcat = unlines
+  [ "char* string_concat(char* s1, char* s2) {"
+    , "char* buf = malloc(strlen(s2) + strlen(s2));"
+    , "snprintf(buf, sizeof buf, \"%s%s\", s1, s2);"
+    , "return buf;"
+  , "}"
+  ]
+
+
+stringRepeat :: String
+stringRepeat = unlines
+  [ "char* string_repeat(char* s, int count) {"
+    , "char* buf = malloc(strlen(s) * count);"
+    , "strcpy(buf, s);"
+    , "while (--count > 0) {"
+      , "strcat(buf, s);"
+    , "}"
+    , "return buf;"
+  , "}"
+  ]
