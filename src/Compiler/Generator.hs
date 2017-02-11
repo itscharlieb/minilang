@@ -82,6 +82,8 @@ generateStrConcat e1 e2 =
 
 
 generateStrRepeat :: TExp -> TExp -> String
+generateStrRepeat e1@(_, TInt) e2@(_, TString) =
+  "string_repeat(" ++ generateExp e2 ++ ", " ++ generateExp e1 ++ ")"
 generateStrRepeat e1 e2 =
   "string_repeat(" ++ generateExp e1 ++ ", " ++ generateExp e2 ++ ")"
 
