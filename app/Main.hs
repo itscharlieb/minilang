@@ -27,14 +27,16 @@ compile fp = do
   text <- readFile fp
 
   case parse fp text of
-    Left errorMsg -> do
-      putStrLn errorMsg
+    Left parseError -> do
+      print parseError
       exitFailure
     Right program -> do
       writeFile prettyFile (pretty program)
       case typeCheck program of
-        Left typeError ->
-          writeFile symbolFile $ show typeError
+        Left (typeError, symbolTable) -> do
+          writeFile symbolFile (show symbolTable)
+          print typeError
+          exitFailure
         Right typedProgram ->
           writeFile cFile $ generate typedProgram
       where

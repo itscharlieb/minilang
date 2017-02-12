@@ -48,7 +48,11 @@ data TExp'
   deriving (Show, Eq)
 
 
-data TypeError
+-- Quick fix so SymbolTable is accessible externally for printing
+type TypeError = (TypeError', SymbolTable)
+
+
+data TypeError'
   = TypeMismatch
     { expected :: PrimType
     , found :: PrimType
@@ -62,7 +66,7 @@ data TypeError
   deriving (Eq)
 
 
-instance Show TypeError where
+instance Show TypeError' where
   show TypeMismatch {expected = e,  found = f} =
     concat ["Expected Type = ", show e, ". Found Type = ", show f]
   show InvalidType {found = f} =
@@ -94,11 +98,11 @@ validateStatement (Print e) table = do
   return $ TPrint e'
 validateStatement (Read name) table =
   case get table name of
-    Nothing -> Left $ MissingDeclaration name
+    Nothing -> Left (MissingDeclaration name, table)
     Just (_, type') -> Right $ TRead (TId name, type')
 validateStatement (Assign name e) table =
   case get table name of
-    Nothing -> Left $ MissingDeclaration name
+    Nothing -> Left (MissingDeclaration name, table)
     Just (_, idType) -> do
       e' <- validateExpression e table
       case (idType, snd e') of
@@ -106,15 +110,15 @@ validateStatement (Assign name e) table =
         (TFloat, TInt) -> Right $ TAssign name e'
         (TFloat, TFloat) -> Right $ TAssign name e'
         (TString, TString) -> Right $ TAssign name e'
-        (expectedType, foundType) -> Left $ TypeMismatch expectedType foundType
+        (expectedType, foundType) -> Left (TypeMismatch expectedType foundType, table)
 validateStatement (While e stmts) table = do
   e' <- validateExpression e table
-  validateType e' TInt
+  validateType e' TInt table
   stmts' <- validateStatements stmts table
   Right $ TWhile e' stmts'
 validateStatement (If e stmts1 stmts2) table = do
   e' <- validateExpression e table
-  validateType e' TInt
+  validateType e' TInt table
   stmts1' <- validateStatements stmts1 table
   stmts2' <- validateStatements stmts2 table
   Right $ TIf e' stmts1' stmts2'
@@ -125,7 +129,7 @@ validateExpression :: Exp -> SymbolTable -> Either TypeError TExp
 validateExpression (Negate e) table = do
   e' <- validateExpression e table
   case snd e' of
-    TString -> Left $ InvalidType TString
+    TString -> Left (InvalidType TString, table)
     _ -> return e'
 validateExpression (Plus e1 e2) table = do
   e1' <- validateExpression e1 table
@@ -137,7 +141,7 @@ validateExpression (Plus e1 e2) table = do
       (TFloat, TInt) -> Right (e, TFloat)
       (TFloat, TFloat) -> Right (e, TFloat)
       (TString, TString) -> Right (e, TString)
-      (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
+      (expectedType, actualType) -> Left (TypeMismatch expectedType actualType, table)
 validateExpression (Minus e1 e2) table = validateStandardBinaryOp e1 e2 TMinus table
 validateExpression (Times e1 e2) table = do
   e1' <- validateExpression e1 table
@@ -150,14 +154,14 @@ validateExpression (Times e1 e2) table = do
       (TFloat, TInt) -> Right (e, TFloat)
       (TFloat, TFloat) -> Right (e, TFloat)
       (TString, TInt) -> Right (e, TString)
-      (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
+      (expectedType, actualType) -> Left (TypeMismatch expectedType actualType, table)
 validateExpression (Div e1 e2) table = validateStandardBinaryOp e1 e2 TDiv table
 validateExpression (Int i) _ = Right (TIntVal i, TInt)
 validateExpression (Float f) _ = Right (TFloatVal f, TFloat)
 validateExpression (String s) _ = Right (TStringVal s, TString)
 validateExpression (Id name) table =
   case get table name of
-    Nothing -> Left $ MissingDeclaration name
+    Nothing -> Left (MissingDeclaration name, table)
     Just (_, type') -> Right (TId name, type')
 
 
@@ -171,13 +175,13 @@ validateStandardBinaryOp e1 e2 f table = do
     (TFloat, TInt) -> Right (f e1' e2', TFloat)
     (TInt, TFloat) -> Right (f e1' e2', TFloat)
     (TFloat, TFloat) -> Right (f e1' e2', TFloat)
-    (expectedType, actualType) -> Left $ TypeMismatch expectedType actualType
+    (expectedType, actualType) -> Left (TypeMismatch expectedType actualType, table)
 
 
 --
-validateType :: TExp -> PrimType -> Either TypeError TExp
-validateType (e, expected) found =
-  if expected == found then Right (e, expected) else Left $ TypeMismatch expected found
+validateType :: TExp -> PrimType -> SymbolTable -> Either TypeError TExp
+validateType (e, expected) found table =
+  if expected == found then Right (e, expected) else Left (TypeMismatch expected found, table)
 
 
 --
@@ -189,5 +193,5 @@ buildTable = foldM insert' empty
 insert' :: SymbolTable -> Dclr -> Either TypeError SymbolTable
 insert' table (Dclr name primType) =
   case insert table (name, primType) of
-    Left _ -> Left $ DuplicateDeclaration name
+    Left _ -> Left (DuplicateDeclaration name, table)
     Right table' -> Right table'
