@@ -103,7 +103,7 @@ lexwrap = (alexMonadScan' >>=)
 --
 parseError :: Token -> Alex a
 parseError (Token p t) =
-  alexError' p ("parse error")
+  alexError' p ("parser error at token '" ++ show t ++ "'")
 
 
 --

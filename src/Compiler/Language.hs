@@ -57,7 +57,6 @@ class Pretty a where
   prettyIndented a i = i ++ pretty a
 
 
-
 --
 instance Pretty Program where
   prettyIndented (Program dclrs stmts) indent =

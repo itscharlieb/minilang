@@ -13,7 +13,6 @@ import System.Exit
 main :: IO ()
 main = do
   args <- getArgs
-  print args
 
   -- Parse Program
   case args of
@@ -37,7 +36,7 @@ compile fp = do
         Left typeError ->
           writeFile symbolFile $ show typeError
         Right typedProgram ->
-          writeFile cFile (generate typedProgram)
+          writeFile cFile $ generate typedProgram
       where
         prettyFile = replaceExtension fp "pretty.min"
         symbolFile = replaceExtension fp "symbol.txt"
